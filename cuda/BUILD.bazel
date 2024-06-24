@@ -82,18 +82,6 @@ repeatable_string_flag(
     build_setting_default = "",
 )
 
-# Command line flag to specify the CUDA runtime. Use this target as CUDA
-# runtime dependency.
-#
-# This target is implicitly added as a dependency to cuda_library() targets.
-# --@local_cuda//:runtime=@local_cuda//:cuda_runtime_static?
-#
-# Example usage: --@rules_cuda//cuda:runtime=@local_cuda//:cuda_runtime_static
-#label_flag(
-#    name = "runtime",
-#    build_setting_default = "@local_cuda//:cuda_runtime",
-#)
-
 # Define configs for platform + CPU that can be used in `select{}` statements.
 selects.config_setting_group(
     name = "linux-x86_64.constraint",

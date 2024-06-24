@@ -25,7 +25,6 @@ def _remote_cuda_impl(rctx):
                 major_version = version.split(".")[0]
                 minor_version = version.split(".")[1]
                 continue
-            print("Checking if lib_arch == arch: {} == {}".format(lib_arch, rctx.attr.platform))
             if lib_arch == rctx.attr.platform:
                 url = rctx.attr.base_url + repos[lib_name][lib_arch]["relative_path"]
                 rctx.download_and_extract(
@@ -35,7 +34,6 @@ def _remote_cuda_impl(rctx):
                     # Store the repository under a directory. We need to somehow include a BUILD.bazel file here too.
                     output = lib_name,
                 )
-                print("lib_name: {}".format(lib_name))
                 if lib_name == "nvcc":
                     rctx.symlink(Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), "{}/BUILD.bazel".format(lib_name))
                 else:
@@ -66,7 +64,6 @@ def _remote_cuda_impl(rctx):
 
     rctx.file("WORKSPACE.bazel", content = "workspace({})".format(rctx.attr.name), executable = False)
     rctx.file("WORKSPACE.bzlmod", content = "workspace({})".format(rctx.attr.name), executable = False)
-#    rctx.file(path = "MODULE.bazel", content = "module(name = '{}')".format(rctx.attr.name), execcutable = False)
 
 remote_cuda = repository_rule(
     implementation = _remote_cuda_impl,
@@ -91,16 +88,13 @@ def _remote_cuda_single_impl(rctx):
         sha256 = rctx.attr.sha256,
         stripPrefix = rctx.attr.strip_prefix,
         # Store the repository under a directory. We need to somehow include a BUILD.bazel file here too.
-#        output = lib_name,
     )
     if rctx.attr.build_file == None:
-        #rctx.symlink(Label("//cuda:templates/remote_cuda_module.BUILD.tpl"), "{}/BUILD.bazel".format(rctx.attr.repo_name))
         if "nvcc" in rctx.attr.repo_name:
             rctx.symlink(Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), "BUILD.bazel")
         else:
             rctx.symlink(Label("//cuda:templates/remote_cuda_module.BUILD.tpl"), "BUILD.bazel")
 
-    print("Creating WORKSPACE & MODULE file  with name: {}".format(rctx.attr.repo_name))
     rctx.file("MODULE.bazel", content = "module(name = '{}')".format(rctx.attr.repo_name), executable = False)
 
 remote_cuda_single = repository_rule(
@@ -118,17 +112,6 @@ remote_cuda_single = repository_rule(
 
 def _remote_cuda_toplevel_impl(rctx):
     # Output a toplevel BUILD.bazel file
-#    print("##############################")
-#    print(Label("@cuda_cudart-linux-x86_64"))
-#    print("##############################")
-#    rctx.template(
-#        "BUILD.bazel",
-#        Label("//cuda:templates/remote_cuda_parallel.BUILD.tpl"),
-#        substitutions = {
-#            "{{PLATFORM_REPO}}": rctx.attr.platform,
-#        },
-#    )
-
     rctx.template(
         "BUILD.bazel",
         Label("//cuda:templates/remote_cuda_parallel.BUILD.tpl"),
@@ -165,10 +148,6 @@ def _remote_cuda_toplevel_impl(rctx):
     content += "\n".join(bazel_deps)
     rctx.file("MODULE.bazel", content, executable = False)
 
-    print("+++++++++++++++++")
-    print(rctx.workspace_root)
-    print("+++++++++++++++++")
-
 remote_cuda_toplevel = repository_rule(
     implementation = _remote_cuda_toplevel_impl,
     attrs = {
@@ -187,43 +166,18 @@ def _remote_cuda_cross_platform_impl(rctx):
         # Expand to list a select from each platform input
         if "{{PLATFORM_CONSTRAINT}}" in line:
             for label, platform in rctx.attr.cuda_platform_repositories.items():
-                print(platform)
-                #TODO: reak up into components
-#            for platform in rctx.attr.platforms:
-#                platform_line = line.replace("{{PLATFORM_REPO}}", "cuda-{}".format(platform.name))
                 platform_line = line.replace("{{PLATFORM_REPO}}", "@{}".format(label.repo_name))
                 out_lines.append(platform_line.replace("{{PLATFORM_CONSTRAINT}}", "@rules_cuda//cuda:{platform}.constraint".format(platform=platform)))
-#                if rctx.os.name in platform and rctx.os.arch in platform:
-#                    host_label = label
             continue
-#        if not host_label:
-#            fail("Could not find a label in cuda_platform_repositories that matches the host platform")
-#        out_lines.append(line.replace("{{HOST_PLATFORM_REPO}}", "cuda-{}-{}".format(rctx.os.name, rctx.os.arch)))
         out_lines.append(line)
     rctx.file("BUILD.bazel", content = "\n".join(out_lines))
     rctx.file("cuda/BUILD.bazel", content = "")
     rctx.symlink(Label("//cuda:templates/defs.bzl.tpl"), "cuda/defs.bzl")
 
-    # Changes {{host_platform}} to the host platform
-    # expands lines containing {{PLATFORM_CONSTRAINT}} into platform constraint select statements
-
-    # Output a toplevel BUILD.bazel file
-#    rctx.template(
-#        "BUILD.bazel",
-#        Label("//cuda:templates/remote_cuda_cross_platform.BUILD.tpl"),
-#        substitutions = {
-#            "{{host_platform}}": "{}-{}".format(rctx.os.name, rctx.os.arch),
-#        },
-#    )
-
 
 remote_cuda_cross_platform = repository_rule(
     implementation = _remote_cuda_cross_platform_impl,
     attrs = {
-#        "platforms": attr.label_list(
-#            doc = "List of platforms to create alias cuda rules for", 
-#            default = []
-#        ),
         "cuda_platform_repositories": attr.label_keyed_string_dict(
             doc = "List of platforms to create alias cuda rules for", 
             mandatory = True,
