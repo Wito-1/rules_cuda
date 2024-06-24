@@ -28,7 +28,6 @@ cuda_toolchain_config(
 filegroup(
     name = "nvcc-compiler-files",
     srcs = [
-        "@cuda_cudart-{{platform}}//:hdrs",
         "@cuda_nvcc-{{platform}}//:bin/bin2c",
         "@cuda_nvcc-{{platform}}//:bin/crt/link.stub",
         "@cuda_nvcc-{{platform}}//:bin/nvcc",
@@ -37,7 +36,7 @@ filegroup(
         "@cuda_nvcc-{{platform}}//:bin/ptxas",
         "@cuda_nvcc-{{platform}}//:bin/fatbinary",
         "@cuda_nvcc-{{platform}}//:bin/cudafe++",
-        "@cuda_nvcc-{{platform}}//:hdrs",
+        "@cuda_nvcc-{{platform}}//:includes",
         "@cuda_nvcc-{{platform}}//:nvvm",
     ],
 )

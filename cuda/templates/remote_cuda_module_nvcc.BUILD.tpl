@@ -4,8 +4,14 @@ package(
 
 cc_library(
     name = "hdrs",
-    hdrs = glob(["**/*.hpp", "**/*.h", "**/*.hh"]),
+    hdrs = [":includes"],
     includes = ["include"],
+)
+
+filegroup(
+    name = "includes",
+    srcs = glob(["**/*.hpp", "**/*.h", "**/*.hh"]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
