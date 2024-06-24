@@ -12,6 +12,12 @@ def if_windows(if_true, if_false = []):
         "//conditions:default": if_false,
     })
 
+def if_cuda(if_true, if_false = []):
+    return select({
+        "@rules_cuda//cuda:is_enabled": if_true,
+        "//conditions:default": if_false,
+    })
+
 def cc_import_versioned_sos(name, shared_library):
     """Creates a cc_library that depends on all versioned .so files with the given prefix.
 

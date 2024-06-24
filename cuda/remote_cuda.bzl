@@ -64,10 +64,6 @@ def _cuda_toolkit_parallel_impl(mctx):
 #        if not mod.is_root:
 #            fail("Only the root module may override the path for the local cuda toolchain")
         cuda_libs = []
-        print("######")
-        print(mod.name)
-        print(dir(mod))
-        print("######")
         for arg in mod.tags.install:
             redistrib_path = arg.redistrib_path or Label("//cuda/redistrib:redistrib_{}.json".format(arg.version))
             redist = mctx.read(Label(redistrib_path))
@@ -105,8 +101,6 @@ def _cuda_toolkit_parallel_impl(mctx):
                 version = arg.version,
                 cuda_libs = cuda_libs
             )
-            print("name = {}".format(arg.name))
-            print("Label(@name) = {}".format(Label("@"+arg.name)))
 
 #        for arg in mod.tags.install_cross_platform:
 #            remote_cuda_cross_platform(name = arg.name, platforms = arg.platforms)
