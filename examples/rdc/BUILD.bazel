@@ -1,4 +1,4 @@
-load("@rules_cuda//cuda:defs.bzl", "cuda_library", "cuda_objects")
+load("@local_cuda//cuda:defs.bzl", "cuda_library", "cuda_objects")
 
 cuda_objects(
     name = "a_objects",
@@ -18,7 +18,6 @@ cuda_library(
     deps = [
         ":a_objects",
         ":b_objects",
-        "@local_cuda//:runtime",
     ],
 )
 
@@ -36,7 +35,6 @@ cuda_library(
     rdc = True,
     deps = [
         ":b",
-        "@local_cuda//:runtime",
     ],
 )
 
@@ -45,9 +43,6 @@ cuda_library(
     srcs = ["b.cu"],
     hdrs = ["b.cuh"],
     rdc = True,
-    deps = [
-        "@local_cuda//:runtime",
-    ],
 )
 
 cc_binary(
