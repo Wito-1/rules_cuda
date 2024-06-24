@@ -7,7 +7,7 @@ load("@rules_cuda//cuda/private:rules/cuda_library.bzl", _cuda_library = "cuda_l
 load("@rules_cuda//cuda/private:macros/cuda_binary.bzl", _cuda_binary = "cuda_binary")
 load("@rules_cuda//cuda/private:macros/cuda_test.bzl", _cuda_test = "cuda_test")
 load("@rules_cuda//cuda/private:defs.bzl", _requires_cuda = "requires_cuda")
-load("@rules_cuda//cuda/private:os_helpers.bzl", _if_linux = "if_linux", _if_windows = "if_windows", _if_cuda, "if_cuda")
+load("@rules_cuda//cuda/private:os_helpers.bzl", _if_linux = "if_linux", _if_windows = "if_windows", _if_cuda = "if_cuda")
 
 def cuda_objects(**kwargs):
     deps = kwargs.pop("deps", []) + [Label("//:runtime")]
