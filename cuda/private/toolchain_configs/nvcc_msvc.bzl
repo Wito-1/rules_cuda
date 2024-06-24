@@ -338,12 +338,48 @@ def _impl(ctx):
         ],
     )
 
+    arch_all_feature = feature(
+        name = "arch_all",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cuda_compile,
+                    ACTION_NAMES.device_link,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-arch=all"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    arch_all_major_feature = feature(
+        name = "arch_all_major",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cuda_compile,
+                    ACTION_NAMES.device_link,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-arch=all-major"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
     dbg_feature = feature(
         name = "dbg",
         flag_sets = [
             flag_set(
                 actions = [ACTION_NAMES.cuda_compile],
-                flag_groups = [flag_group(flags = ["-Xcompiler", "/Od", "-Xcompiler", "/Z7"])],
+                flag_groups = [flag_group(flags = ["-O0", "-Xcompiler", "/Z7"])],
             ),
         ],
         implies = ["generate_pdb_file"],
@@ -356,12 +392,12 @@ def _impl(ctx):
             flag_set(
                 actions = [ACTION_NAMES.cuda_compile],
                 flag_groups = [flag_group(flags = [
-                    "--dopt",  # the default depends on the value of --device-debug (-G), so set it explicitly.
-                    "on",
+                    "-O2",
                     "-DNDEBUG",
-                    "-Xcompiler",
-                    "/O2",
-                ])],
+                ] + (
+                    # the default depends on the value of --device-debug (-G), so set it explicitly.
+                    ["--dopt", "on"] if nvcc_version_ge(ctx, 11, 7) else []
+                ))],
             ),
         ],
         implies = ["frame_pointer"],
@@ -373,7 +409,7 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 actions = [ACTION_NAMES.cuda_compile],
-                flag_groups = [flag_group(flags = ["-Xcompiler", "/Od", "-Xcompiler", "/Z7"])],
+                flag_groups = [flag_group(flags = ["-O0", "-Xcompiler", "/Z7"])],
             ),
         ],
         implies = ["generate_pdb_file"],
@@ -526,6 +562,8 @@ def _impl(ctx):
         supports_compiler_device_link_feature,
         use_local_env_feature,
         arch_native_feature,
+        arch_all_feature,
+        arch_all_major_feature,
         default_compile_flags_feature,
         include_paths_feature,
         defines_feature,

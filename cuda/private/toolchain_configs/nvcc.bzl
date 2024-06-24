@@ -178,6 +178,42 @@ def _impl(ctx):
         ],
     )
 
+    arch_all_feature = feature(
+        name = "arch_all",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cuda_compile,
+                    ACTION_NAMES.device_link,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-arch=all"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    arch_all_major_feature = feature(
+        name = "arch_all_major",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cuda_compile,
+                    ACTION_NAMES.device_link,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-arch=all-major"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
     pic_feature = feature(
         name = "pic",
         enabled = True,
@@ -298,7 +334,7 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 actions = [ACTION_NAMES.cuda_compile],
-                flag_groups = [flag_group(flags = ["-g"])],
+                flag_groups = [flag_group(flags = ["-O0", "-g"])],
             ),
         ],
         provides = ["compilation_mode"],
@@ -310,8 +346,6 @@ def _impl(ctx):
             flag_set(
                 actions = [ACTION_NAMES.cuda_compile],
                 flag_groups = [flag_group(flags = [
-                    "--dopt",  # the default depends on the value of --device-debug (-G), so set it explicitly.
-                    "on",
                     "-Xcompiler",
                     "-g0",
                     "-O2",
@@ -320,7 +354,10 @@ def _impl(ctx):
                     "-ffunction-sections",
                     "-Xcompiler",
                     "-fdata-sections",
-                ])],
+                ] + (
+                    # the default depends on the value of --device-debug (-G), so set it explicitly.
+                    ["--dopt", "on"] if nvcc_version_ge(ctx, 11, 7) else []
+                ))],
             ),
         ],
         provides = ["compilation_mode"],
@@ -331,7 +368,7 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 actions = [ACTION_NAMES.cuda_compile],
-                flag_groups = [flag_group(flags = ["--generate-line-info", "-Xcompiler", "-g1"])],
+                flag_groups = [flag_group(flags = ["-O0", "--generate-line-info", "-Xcompiler", "-g1"])],
             ),
         ],
         provides = ["compilation_mode"],
@@ -440,6 +477,8 @@ def _impl(ctx):
         nvcc_compile_env_feature,
         nvcc_device_link_env_feature,
         arch_native_feature,
+        arch_all_feature,
+        arch_all_major_feature,
         pic_feature,
         host_compiler_feature,
         supports_compiler_device_link_feature,

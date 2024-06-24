@@ -9,6 +9,7 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.9")
 
+# Example of how one would instantiate platform specific toolchains
 toolchain_parallel = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_parallel", dev_dependency=True)
 toolchain_parallel.install(
     name = "cuda-linux-x86_64",

@@ -6,6 +6,8 @@ These rules provide some macros and rules that make it easier to build CUDA with
 
 ## Getting Started
 
+### Traditional WORKSPACE approach
+
 Add the following to your `WORKSPACE` file and replace the placeholders with actual values.
 
 ```starlark
@@ -22,18 +24,41 @@ register_detected_cuda_toolchains()
 ```
 
 **NOTE**: the use of `register_detected_cuda_toolchains` depends on the environment variable `CUDA_PATH`. You must also
-ensure the host compiler is available. On windows, this means that you will also need to set the environment variable
+ensure the host compiler is available. On Windows, this means that you will also need to set the environment variable
 `BAZEL_VC` properly.
 
 [`detect_cuda_toolkit`](https://github.com/bazel-contrib/rules_cuda/blob/5633f0c0f7/cuda/private/repositories.bzl#L28-L58)
 and [`detect_clang`](https://github.com/bazel-contrib/rules_cuda/blob/5633f0c0f7/cuda/private/repositories.bzl#L143-L166)
 determains how the toolchains are detected.
 
+### Bzlmod
+
+Add the following to your `MODULE.bazel` file and replace the placeholders with actual values.
+
+```starlark
+bazel_dep(name = "rules_cuda", version = "0.2.1")
+
+# pick a specific version (this is optional an can be skipped)
+archive_override(
+    module_name = "rules_cuda",
+    integrity = "{sha256_to_replace}",
+    urls = "https://github.com/bazel-contrib/rules_cuda/archive/{git_commit_hash}.tar.gz",
+    strip_prefix = "rules_cuda-{git_commit_hash}",
+)
+
+cuda = use_extension("@rules_cuda//cuda:extensions.bzl", "toolchain")
+cuda.local_toolchain(
+    name = "local_cuda",
+    toolkit_path = "",
+)
+use_repo(cuda, "local_cuda")
+```
+
 ### Rules
 
 - `cuda_library`: Can be used to compile and create static library for CUDA kernel code. The resulting targets can be
   consumed by [C/C++ Rules](https://bazel.build/reference/be/c-cpp#rules).
-- `cuda_objects`: If you don't understand what _device link_ means, you must never use it. This rule produce incomplete
+- `cuda_objects`: If you don't understand what _device link_ means, you must never use it. This rule produces incomplete
   object files that can only be consumed by `cuda_library`. It is created for relocatable device code and device link
   time optimization source files.
 
@@ -45,7 +70,7 @@ Some flags are defined in [cuda/BUILD.bazel](cuda/BUILD.bazel). To use them, for
 bazel build --@rules_cuda//cuda:archs=compute_61:compute_61,sm_61
 ```
 
-In `.bazelrc` file, you can define shortcut alias for the flag, for example:
+In `.bazelrc` file, you can define a shortcut alias for the flag, for example:
 
 ```
 # Convenient flag shortcuts.
@@ -77,6 +102,10 @@ bazel build --cuda_archs=compute_61:compute_61,sm_61
 
   Add the copts to all cuda compile actions.
 
+- `@rules_cuda//cuda:host_copts`
+
+  Add the copts to the host compiler.
+
 - `@rules_cuda//cuda:runtime`
 
   Set the default cudart to link, for example, `--@rules_cuda//cuda:runtime=@local_cuda//:cuda_runtime_static` link the static cuda runtime.
@@ -93,7 +122,7 @@ Checkout the examples to see if it fits your needs.
 
 See [examples](./examples) for basic usage.
 
-See [rules_cuda_examples](https://github.com/cloudhan/rules_cuda_examples) for extended real world projects.
+See [rules_cuda_examples](https://github.com/cloudhan/rules_cuda_examples) for extended real-world projects.
 
 ## Known issue
 
@@ -107,6 +136,7 @@ The problem is caused by nvcc use PID to determine temporary file name, and with
 
 To avoid it:
 
+- Update to Bazel 7 where `--incompatible_sandbox_hermetic_tmp` is enabled by default.
 - Use `--spawn_strategy local` should eliminate the case because it will let nvcc sees the true PIDs.
 - Use `--experimental_use_hermetic_linux_sandbox` should eliminate the case because it will avoid the sharing of `/tmp`.
 - Add `-objtemp` option to the command should reduce the case from happening.

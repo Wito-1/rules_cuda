@@ -109,7 +109,7 @@ def _wrapper_device_link(
     actions = ctx.actions
     pic_suffix = "_pic" if pic else ""
 
-    # Device-link to cubins for each gpu architecture. The stage1 compiled PTX is embeded in the object files.
+    # Device-link to cubins for each gpu architecture. The stage1 compiled PTX is embedded in the object files.
     # We don't need to do any thing about it, presumably.
     register_h = None
     cubins = []
@@ -188,7 +188,7 @@ def _wrapper_device_link(
     compile_common = cuda_helper.create_common_info(
         # this is useless
         cuda_archs_info = common.cuda_archs_info,
-        headers = [fatbin_h],
+        headers = [fatbin_h, register_h],
         defines = [
             # Silence warning about including internal header.
             "__CUDA_INCLUDE_COMPILER_INTERNAL_HEADERS__",
@@ -196,12 +196,12 @@ def _wrapper_device_link(
             "__NV_EXTRA_INITIALIZATION=",
             "__NV_EXTRA_FINALIZATION=",
         ],
-        # TODO: avoid the hardcode path
-        includes = common.includes + ["external/local_cuda/cuda/include"],
+        includes = common.includes,
         system_includes = common.system_includes,
         quote_includes = common.quote_includes,
         # suppress cuda mode as c++ mode
-        host_compile_flags = common.host_compile_flags + ["-x", "c++"],
+        compile_flags = ["-x", "c++"],
+        host_compile_flags = common.host_compile_flags,
     )
-    ret = compile(ctx, cuda_toolchain, cc_toolchain, srcs = [fatbin_c], common = compile_common, pic = pic, rdc = rdc)
+    ret = compile(ctx, cuda_toolchain, cc_toolchain, srcs = [fatbin_c], common = compile_common, pic = pic, rdc = rdc, _prefix = "_objs/_dlink")
     return ret[0]

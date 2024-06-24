@@ -48,7 +48,7 @@ def detect_cuda_toolkit(repository_ctx):
         if ptxas_path:
             # ${CUDA_PATH}/bin/ptxas
 
-            # Some distributions instead put CUDA binaries in a seperate path
+            # Some distributions instead put CUDA binaries in a separate path
             # Manually check and redirect there when necessary
             alternative = repository_ctx.path("/usr/lib/nvidia-cuda-toolkit/bin/nvcc")
             if str(ptxas_path) == "/usr/bin/ptxas" and alternative.exists:
@@ -67,13 +67,13 @@ def detect_cuda_toolkit(repository_ctx):
     fatbinary = "@rules_cuda//cuda/dummy:fatbinary"
     if cuda_path != None:
         if repository_ctx.path(cuda_path + "/bin/nvlink" + bin_ext).exists:
-            nvlink = ":cuda/bin/nvlink{}".format(bin_ext)
+            nvlink = str(Label("@local_cuda//:cuda/bin/nvlink{}".format(bin_ext)))
         if repository_ctx.path(cuda_path + "/bin/crt/link.stub").exists:
-            link_stub = ":cuda/bin/crt/link.stub"
+            link_stub = str(Label("@local_cuda//:cuda/bin/crt/link.stub"))
         if repository_ctx.path(cuda_path + "/bin/bin2c" + bin_ext).exists:
-            bin2c = ":cuda/bin/bin2c{}".format(bin_ext)
+            bin2c = str(Label("@local_cuda//:cuda/bin/bin2c{}".format(bin_ext)))
         if repository_ctx.path(cuda_path + "/bin/fatbinary" + bin_ext).exists:
-            fatbinary = ":cuda/bin/fatbinary{}".format(bin_ext)
+            fatbinary = str(Label("@local_cuda//:cuda/bin/fatbinary{}".format(bin_ext)))
 
     nvcc_version_major = -1
     nvcc_version_minor = -1
@@ -116,7 +116,7 @@ def config_cuda_toolkit_and_nvcc(repository_ctx, cuda):
         repository_ctx.symlink(Label("//cuda:runtime/BUILD.local_cuda"), "BUILD")
         defs_bzl_content += defs_if_local_cuda % "if_true"
     else:
-        repository_ctx.file("BUILD")  # Empty file
+        repository_ctx.symlink(Label("//cuda:runtime/BUILD.local_cuda_disabled"), "BUILD")
         defs_bzl_content += defs_if_local_cuda % "if_false"
     repository_ctx.file("defs.bzl", defs_bzl_content)
 
@@ -190,12 +190,17 @@ def config_clang(repository_ctx, cuda, clang_path):
     }
     repository_ctx.template("toolchain/clang/BUILD", tpl_label, substitutions = substitutions, executable = False)
 
+def config_disabled(repository_ctx):
+    repository_ctx.symlink(Label("//cuda:templates/BUILD.local_toolchain_disabled"), "toolchain/disabled/BUILD")
+
 def _local_cuda_impl(repository_ctx):
     cuda = detect_cuda_toolkit(repository_ctx)
     config_cuda_toolkit_and_nvcc(repository_ctx, cuda)
 
     clang_path = detect_clang(repository_ctx)
     config_clang(repository_ctx, cuda, clang_path)
+
+    config_disabled(repository_ctx)
 
 local_cuda = repository_rule(
     implementation = _local_cuda_impl,
@@ -214,10 +219,10 @@ def rules_cuda_dependencies(toolkit_path = None):
     maybe(
         name = "bazel_skylib",
         repo_rule = http_archive,
-        sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+        sha256 = "66ffd9315665bfaafc96b52278f57c7e2dd09f5ede279ea6d39b2be471e7e3aa",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
         ],
     )
 

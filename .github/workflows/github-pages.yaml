@@ -16,25 +16,20 @@ jobs:
         docs:
           # { ref: <branch/tag name>, name: <docs drop down entry> }
           - { ref: main, name: latest }
+          - { ref: v0.2.1, name: 0.2.1 }
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: ${{ matrix.docs.ref == 'main' }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.docs.ref }}
         if: ${{ matrix.docs.ref != 'main' }}
 
-      - uses: bazelbuild/setup-bazelisk@v2
-      - name: Mount bazel cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/bazel
-          key: bazel-gen-docs-${{ matrix.docs.ref }}
+      - uses: bazelbuild/setup-bazelisk@v3
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-          cache: pip
 
       - name: Generate docs
         run: bash ./build-docs.sh
@@ -44,7 +39,7 @@ jobs:
 
       - run: bazelisk shutdown
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: "${{ matrix.docs.name }}"
           path: ${{ github.workspace }}/docs/site/
@@ -56,15 +51,15 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: ${{ github.workspace }}/docs/generated
       - name: Inspect docs site directory structure
         run: find ${{ github.workspace }}/docs/generated -maxdepth 2
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - run: |
@@ -72,7 +67,7 @@ jobs:
           python versioning.py generated/
         working-directory: ${{ github.workspace }}/docs
 
-      - uses: peaceiris/actions-gh-pages@v3
+      - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/generated
