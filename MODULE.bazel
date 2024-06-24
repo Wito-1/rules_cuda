@@ -1,18 +1,72 @@
 module(
     name = "rules_cuda",
-    compatibility_level = 1,
     version = "0.0.0",
+    compatibility_level = 1,
 )
 
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-bazel_dep(name = "bazel_skylib", version = "1.4.2")
-bazel_dep(name = "platforms", version = "0.0.6")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.9")
 
-toolchain = use_extension("@rules_cuda//cuda:extensions.bzl", "toolchain")
-use_repo(toolchain, "local_cuda")
+toolchain_parallel = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_parallel", dev_dependency=True)
+toolchain_parallel.install(
+    name = "cuda-linux-x86_64",
+    platform = "linux-x86_64",
+    version = "11.8.0",
+)
+toolchain_parallel.install(
+    name = "cuda-linux-aarch64",
+    platform = "linux-aarch64",
+    version = "11.8.0",
+)
+toolchain_parallel.install(
+    name = "cuda-linux-sbsa",
+    platform = "linux-sbsa",
+    version = "11.8.0",
+)
+
+use_repo(toolchain_parallel, "cuda-linux-aarch64", "cuda-linux-sbsa", "cuda-linux-x86_64")
+
+# This toolchain contains a bunch of selects across the platforms
+toolchain_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_cross_platform", dev_dependency=True)
+toolchain_cross_platform.install(
+    name = "local_cuda",
+    platforms = [
+        "linux-sbsa",
+        "linux-aarch64",
+        "linux-x86_64",
+    ],
+)
+use_repo(toolchain_cross_platform, "local_cuda")
+
+#http_archive(
+#    name = "libcudacxx",
+#    build_file = "@rules_cuda//third_party:libcu++.BUILD",
+#    sha256 = "05b1435ad65f5bdef1bb8d1eb29dc8f0f7df34c01d77bf8686687a4603588bce",
+#    strip_prefix = "libcudacxx-1.9.0",
+#    url = "https://github.com/NVIDIA/libcudacxx/archive/refs/tags/1.9.0.tar.gz",
+#)
+#
+#http_archive(
+#    name = "thrust",
+#    build_file = "@rules_cuda//third_party:thrust.BUILD",
+#    sha256 = "d021e37f5aac30fd1b9737865399feb57db8e601ae2fc0af3cd41784435e9523",
+#    strip_prefix = "thrust-1.17.2",
+#    url = "https://github.com/NVIDIA/thrust/archive/refs/tags/1.17.2.tar.gz",
+#)
+#
+#http_archive(
+#    name = "cub",
+#    build_file = "@rules_cuda//third_party:cub.BUILD",
+#    sha256 = "1013a595794548c359f22c07e1f8c620b97e3a577f7e8496d9407f74566a3e2a",
+#    strip_prefix = "cub-1.17.2",
+#    url = "https://github.com/NVIDIA/cub/archive/refs/tags/1.17.2.tar.gz",
+#)
 
 register_toolchains(
-    "@local_cuda//toolchain:nvcc-local-toolchain",
-    "@local_cuda//toolchain/clang:clang-local-toolchain",
+    "@cuda-linux-x86_64//toolchain:nvcc-toolchain",
+    "@cuda-linux-aarch64//toolchain:nvcc-toolchain",
+    "@cuda-linux-sbsa//toolchain:nvcc-toolchain",
+    dev_dependency = True,
 )
-

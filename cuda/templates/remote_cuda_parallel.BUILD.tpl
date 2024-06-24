@@ -5,14 +5,16 @@ package(
 cc_library(
     name = "cuda_headers",
     deps = [
-        "@cuda_cudart-linux-x86_64//:hdrs",
-        "@cuda_nvcc-linux-x86_64//:hdrs",
+        "@cuda_cudart-{{platform}}//:hdrs",
+        "@cuda_nvcc-{{platform}}//:hdrs",
     ],
 )
 
 cc_library(
     name = "cuda_stub",
-    srcs = ["@cuda_cudart-linux-x86_64//:lib/stubs/libcuda.so"],
+    srcs = [
+        "@cuda_cudart-{{platform}}//:lib/stubs/libcuda.so"
+    ],
     linkopts = [
         "-ldl",
         "-lpthread",
@@ -22,27 +24,27 @@ cc_library(
 
 cc_library(
     name = "cudart_so",
-    srcs = ["@cuda_cudart-linux-x86_64//:lib/libcudart.so",],
+    srcs = ["@cuda_cudart-{{platform}}//:lib/libcudart.so",],
     target_compatible_with = ["@platforms//os:linux"],
     alwayslink = 1,
 )
 
 cc_library(
     name = "cudadevrt_a",
-    srcs = ["@cuda_cudart-linux-x86_64//:lib/libcudadevrt.a"],
+    srcs = ["@cuda_cudart-{{platform}}//:lib/libcudadevrt.a"],
     target_compatible_with = ["@platforms//os:linux"],
     alwayslink = 1,
 )
 
 cc_import(
     name = "cudart_lib",
-    interface_library = "cuda/lib/x64/cudart.lib",
+    interface_library = "@cuda_cudart-{{platform}}//:cuda/lib/x64/cudart.lib",
     target_compatible_with = ["@platforms//os:windows"],
 )
 
 cc_import(
     name = "cudadevrt_lib",
-    interface_library = "cuda/lib/x64/cudadevrt.lib",
+    interface_library = "@cuda_cudart-{{platform}}//:cuda/lib/x64/cudadevrt.lib",
     target_compatible_with = ["@platforms//os:windows"],
 )
 
@@ -57,8 +59,8 @@ cc_library(
     ],
     alwayslink = 1,
     deps = [
-        "@cuda_cudart-linux-x86_64//:hdrs",
-        "@cuda_nvcc-linux-x86_64//:hdrs",
+        "@cuda_cudart-{{platform}}//:hdrs",
+        "@cuda_nvcc-{{platform}}//:hdrs",
     ] + [
         # devrt is require for jit linking when rdc is enabled
         ":cudadevrt_a",
@@ -70,7 +72,7 @@ cc_library(
 # @rules_cuda//cuda:runtime instead.
 cc_library(
     name = "cuda_runtime_static",
-    srcs = ["cuda/lib64/libcudart_static.a"],
+    srcs = ["@cuda_cudart-{{platform}}//:lib/libcudart_static.a"],
     linkopts = [
         "-ldl",
         "-lpthread",
@@ -85,13 +87,13 @@ cc_library(
 
 cc_import(
     name = "cuda_so",
-    shared_library = "@cuda_cudart-linux-x86_64//:lib/stubs/libcuda.so",
+    shared_library = "@cuda_cudart-{{platform}}//:lib/stubs/libcuda.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_import(
     name = "cuda_lib",
-    interface_library = "cuda/lib/x64/cuda.lib",
+    interface_library = "@cuda_cudart-{{platform}}//:cuda/lib/x64/cuda.lib",
     target_compatible_with = ["@platforms//os:windows"],
 )
 
@@ -106,25 +108,25 @@ cc_library(
 
 cc_import(
     name = "cublas_so",
-    shared_library = "@libcublas-linux-x86_64//:lib/libcublas.so",
+    shared_library = "@libcublas-{{platform}}//:lib/libcublas.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_import(
     name = "cublasLt_so",
-    shared_library = "@libcublas-linux-x86_64//:lib/libcublasLt.so",
+    shared_library = "@libcublas-{{platform}}//:lib/libcublasLt.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_import(
     name = "cublas_lib",
-    interface_library = "cuda/lib/x64/cublas.lib",
+    interface_library = "@libcublas-{{platform}}//:cuda/lib/x64/cublas.lib",
     target_compatible_with = ["@platforms//os:windows"],
 )
 
 cc_import(
     name = "cublasLt_lib",
-    interface_library = "cuda/lib/x64/cublasLt.lib",
+    interface_library = "@libcublas-{{platform}}//:cuda/lib/x64/cublasLt.lib",
     target_compatible_with = ["@platforms//os:windows"],
 )
 
@@ -132,7 +134,7 @@ cc_library(
     name = "cublas",
     deps = [
         ":cuda_runtime",
-        "@libcublas-linux-x86_64//:hdrs",
+        "@libcublas-{{platform}}//:hdrs",
     ] + [
         ":cublasLt_so",
         ":cublas_so",
@@ -142,21 +144,21 @@ cc_library(
 # CUPTI
 cc_import(
     name = "cupti_so",
-    shared_library = "cuda/lib64/libcupti.so",
+    shared_library = "@cuda_cupti-{{platform}}//:lib/libcupti.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_import(
     name = "cupti_lib",
-    interface_library = "cuda/extras/CUPTI/lib64/cupti.lib",
+    interface_library = "@cuda_cupti-{{platform}}//:cuda/extras/CUPTI/lib64/cupti.lib",
     target_compatible_with = ["@platforms//os:windows"],
 )
 
-cc_library(
-    name = "cupti_headers",
-    hdrs = glob(["cuda/extras/CUPTI/include/*.h"]),
-    includes = ["cuda/extras/CUPTI/include"],
-)
+#cc_library(
+#    name = "cupti_headers",
+#    hdrs = glob(["cuda/extras/CUPTI/include/*.h"]),
+#    includes = ["cuda/extras/CUPTI/include"],
+#)
 
 cc_library(
     name = "cupti",
@@ -170,7 +172,7 @@ cc_library(
 # nvperf
 cc_import(
     name = "nvperf_host_so",
-    shared_library = "cuda/lib64/libnvperf_host.so",
+    shared_library = "@cuda_cupti-{{platform}}//:lib/libnvperf_host.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -191,7 +193,7 @@ cc_library(
 
 cc_import(
     name = "nvperf_target_so",
-    shared_library = "cuda/lib64/libnvperf_target.so",
+    shared_library = "@cuda_cupti-{{platform}}//:lib/libnvperf_target.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -213,7 +215,7 @@ cc_library(
 # NVML
 cc_import(
     name = "nvidia-ml_so",
-    shared_library = "cuda/lib64/stubs/libnvidia-ml.so",
+    shared_library = "@cuda_nvml_dev-{{platform}}//:lib/stubs/libnvidia-ml.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -235,7 +237,7 @@ cc_library(
 # curand
 cc_import(
     name = "curand_so",
-    shared_library = "cuda/lib64/libcurand.so",
+    shared_library = "@libcurand-{{platform}}//:lib/stubs/libcurand.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -257,7 +259,7 @@ cc_library(
 # nvptxcompiler
 cc_import(
     name = "nvptxcompiler_so",
-    static_library = "cuda/lib64/libnvptxcompiler_static.a",
+    static_library = "@cuda_nvcc-{{platform}}//:lib/libnvptxcompiler_static.a",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -267,28 +269,28 @@ cc_import(
     target_compatible_with = ["@platforms//os:windows"],
 )
 
-cc_library(
-    name = "nvptxcompiler",
-    srcs = [],
-    hdrs = glob([
-        "cuda/include/fatbinary_section.h",
-        "cuda/include/nvPTXCompiler.h",
-        "cuda/include/crt/*",
-    ]),
-    includes = [
-        "cuda/include",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [] +
-    [
-        ":nvptxcompiler_so"
-    ]
-)
+#cc_library(
+#    name = "nvptxcompiler",
+#    srcs = [],
+#    hdrs = glob([
+#        "cuda/include/fatbinary_section.h",
+#        "cuda/include/nvPTXCompiler.h",
+#        "cuda/include/crt/*",
+#    ]),
+#    includes = [
+#        "cuda/include",
+#    ],
+#    visibility = ["//visibility:public"],
+#    deps = [] +
+#    [
+#        ":nvptxcompiler_so"
+#    ]
+#)
 
 # cufft
 cc_import(
     name = "cufft_so",
-    shared_library = "cuda/lib64/libcufft.so",
+    shared_library = "@libcufft-{{platform}}//:lib/libcufft.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -298,17 +300,17 @@ cc_import(
     target_compatible_with = ["@platforms//os:windows"],
 )
 
-cc_import(
-    name = "cufftw_so",
-    shared_library = "cuda/lib64/libcufftw.so",
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-cc_import(
-    name = "cufftw_lib",
-    interface_library = "cuda/lib/x64/cufftw.lib",
-    target_compatible_with = ["@platforms//os:windows"],
-)
+#cc_import(
+#    name = "cufftw_so",
+#    shared_library = "@libcufftw-{{platform}}//:lib/libcufftw.so",
+#    target_compatible_with = ["@platforms//os:linux"],
+#)
+#
+#cc_import(
+#    name = "cufftw_lib",
+#    interface_library = "cuda/lib/x64/cufftw.lib",
+#    target_compatible_with = ["@platforms//os:windows"],
+#)
 
 cc_library(
     name = "cufft",
@@ -316,14 +318,14 @@ cc_library(
         ":cuda_headers",
     ] + [
         ":cufft_so",
-        ":cufftw_so"
+#        ":cufftw_so"
     ],
 )
 
 # cusolver
 cc_import(
     name = "cusolver_so",
-    shared_library = "cuda/lib64/libcusolver.so",
+    shared_library = "@libcusolver-{{platform}}//:lib/libcusolver.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -345,7 +347,7 @@ cc_library(
 # cusparse
 cc_import(
     name = "cusparse_so",
-    shared_library = "cuda/lib64/libcusparse.so",
+    shared_library = "@libcusparse-{{platform}}//:lib/libcusparse.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -367,7 +369,7 @@ cc_library(
 # nvtx
 cc_import(
     name = "nvtx_so",
-    shared_library = "cuda/lib64/libnvToolsExt.so",
+    shared_library = "@cuda_nvtx-{{platform}}//:lib/libnvToolsExt.so",
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -384,4 +386,9 @@ cc_library(
     ] + [
         ":nvtx_so",
     ],
+)
+
+label_flag(
+    name = "runtime",
+    build_setting_default = ":cuda_runtime",
 )

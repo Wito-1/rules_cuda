@@ -18,6 +18,7 @@ cuda_library(
     deps = [
         ":a_objects",
         ":b_objects",
+        "@local_cuda//:runtime",
     ],
 )
 
@@ -33,7 +34,10 @@ cuda_library(
     name = "a",
     srcs = ["a.cu"],
     rdc = True,
-    deps = [":b"],
+    deps = [
+        ":b",
+        "@local_cuda//:runtime",
+    ],
 )
 
 cuda_library(
@@ -41,6 +45,9 @@ cuda_library(
     srcs = ["b.cu"],
     hdrs = ["b.cuh"],
     rdc = True,
+    deps = [
+        "@local_cuda//:runtime",
+    ],
 )
 
 cc_binary(

@@ -41,11 +41,12 @@ cuda_toolchain = rule(
 CPP_TOOLCHAIN_TYPE = "@bazel_tools//tools/cpp:toolchain_type"
 CUDA_TOOLCHAIN_TYPE = "//cuda:toolchain_type"
 
-def _remote_cuda_impl(repository_ctx):
-    redist = repository_ctx.read(Label(repository_ctx.attr.json_path))
+
+def _remote_cuda_impl(rctx):
+    redist = rctx.read(Label(rctx.attr.json_path))
     repos = json.decode(redist)
     repos_to_define = dict()
-    base_url = repository_ctx.attr.base_url
+    base_url = rctx.attr.base_url
 
     for key in repos:
         if key == "release_date":
@@ -53,23 +54,51 @@ def _remote_cuda_impl(repository_ctx):
         for arch in repos[key]:
             if arch == "name" or arch == "license" or arch == "version":
                 continue
-            repos_to_define[key + "-%s" % arch] = {
+            repo_name = key + "-%s" % arch
+            repos_to_define[repo_name] = {
                 "repo_rule": "http_archive",
-                "name": key + "-%s" % arch,
+                "name": repo_name,
                 "sha256": repos[key][arch]["sha256"],
                 "url": base_url + repos[key][arch]["relative_path"],
             }
 
-    repo_defs = "\n".join(["    maybe(name = \"{}\", build_file = \"@rules_cuda//cuda:templates/BUILD.remote_nvcc\", sha256 = \"{}\", repo_rule = {}, urls = [\"{}\"], strip_prefix=\"{}\")\n".format(repos_to_define[repo_name]["name"], repos_to_define[repo_name]["sha256"], repos_to_define[repo_name]["repo_rule"], repos_to_define[repo_name]["url"], repos_to_define[repo_name]["url"].split("/")[-1][:-7]) for repo_name in repos_to_define])
+            rctx.download_and_extract(
+                url = repos_to_define[repo_name]["url"],
+                sha256 = repos_to_define[repo_name]["sha256"],
+                stripPrefix = repos_to_define[repo_name]["strip_prefix"],
+                output = key,
+            )
 
-    repository_ctx.template("repositories.bzl", Label("//cuda:templates/BUILD.repo_template"), substitutions = {"%{repos}": repo_defs}, executable = False)
+            rctx.symlink(Label("//cuda:templates/remote_cuda_module.BUILD.tpl"), "{}/BUILD.bazel".format(key))
 
-    repository_ctx.symlink(Label("//cuda:runtime/BUILD.remote_cuda"), "BUILD.bazel")
-    repository_ctx.symlink(Label("//cuda:templates/BUILD.remote_toolchain_nvcc"), "toolchain/BUILD.bazel")
+    # 
+    # Output a toplevel BUILD.bazel file
+    rctx.template(
+        path = "BUILD.bazel",
+        template = Label("//cuda:templates/remote_cuda.BUILD.tpl"),
+        substitutions = {
+            "{platform}": "linux-x86_64",  #TODO this should be a variable
+            "{repo_name}": rctx.attr.repo_name,
+        },
+    )
+
+    rctx.template(
+        path = "toolchain/BUILD.bazel",
+        template = Label("//cuda:templates/remote_toolchain_nvcc.BUILD.tpl"),
+        substitutions = {
+            "{platform}": "linux-x86_64",  #TODO this should be a variable
+            "{repo}": rctx.attr.repo_name,
+            "{major}": rctx.attr.repo_name,
+            "{minor}": rctx.attr.repo_name,
+            "{os}": rctx.attr.repo_name,
+            "{arch}": rctx.attr.repo_name,
+        },
+    )
 
 _remote_cuda = repository_rule(
     implementation = _remote_cuda_impl,
     attrs = {
+        "repo_name": attr.string(default = "remote_cuda"),
         "base_url": attr.string(default = "https://developer.download.nvidia.com/compute/cuda/redist/"),
         "json_path": attr.string(mandatory = True),
     },
@@ -128,13 +157,13 @@ def register_cuda_toolchains(name = "remote_cuda_toolchain", version = "12.0.0",
         "@%s//toolchain:nvcc-local-toolchain" % name,
     )
 
-# buildifier: disable=unnamed-macro
-def register_detected_cuda_toolchains():
-    """Helper to register the automatically detected CUDA toolchain(s).
-
-User can setup their own toolchain if needed and ignore the detected ones by not calling this macro.
-"""
-    native.register_toolchains(
-        "@local_cuda//toolchain:nvcc-local-toolchain",
-        "@local_cuda//toolchain/clang:clang-local-toolchain",
-    )
+## buildifier: disable=unnamed-macro
+#def register_detected_cuda_toolchains():
+#    """Helper to register the automatically detected CUDA toolchain(s).
+#
+#User can setup their own toolchain if needed and ignore the detected ones by not calling this macro.
+#"""
+#    native.register_toolchains(
+#        "@local_cuda//toolchain:nvcc-local-toolchain",
+#        "@local_cuda//toolchain/clang:clang-local-toolchain",
+#    )
