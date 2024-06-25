@@ -4,7 +4,7 @@ package(
 
 cc_library(
     name = "hdrs",
-    hdrs = glob(["**/*.hpp", "**/*.h", "**/*.hh"]),
+    hdrs = glob(["**/*.hpp", "**/*.h"]),
     includes = ["include"],
 )
 

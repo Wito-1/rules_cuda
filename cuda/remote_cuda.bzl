@@ -102,17 +102,11 @@ def _cuda_toolkit_parallel_impl(mctx):
                 cuda_libs = cuda_libs
             )
 
-#        for arg in mod.tags.install_cross_platform:
-#            remote_cuda_cross_platform(name = arg.name, platforms = arg.platforms)
-
-    return modules.use_all_repos(mctx)
-
 toolchain_parallel = module_extension(
     implementation = _cuda_toolkit_parallel_impl,
     tag_classes = {
         "install": cuda_toolkit,
         "install_toplevel": cuda_toolkit,
-#        "install_cross_platform": cuda_cross_platform_alias,
     },
 )
 
@@ -120,15 +114,7 @@ def _cuda_toolkit_cross_platform_impl(mctx):
     for mod in mctx.modules:
 #        if not mod.is_root:
 #            fail("Only the root module may override the path for the local cuda toolchain")
-#        cuda_libs = []
         for arg in mod.tags.install:
-#            remote_cuda_cross_platform(name = arg.name, platforms = arg.platforms)
-#            for label, platform in arg.cuda_repositories.items():
-#                print("__________________________________________________")
-#                print(label.name)
-#                print(arch)
-#                print(label.repo_name)
-#                print("__________________________________________________")
             remote_cuda_cross_platform(name = arg.name, cuda_platform_repositories = arg.cuda_repositories)
     return modules.use_all_repos(mctx)
 

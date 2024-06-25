@@ -21,7 +21,7 @@ filegroup(
 cc_library(
     name = "includes",
     hdrs = [":include-src"],
-    includes = ["."],
+    includes = [".", "cub"],
     textual_hdrs = glob([
         "cub/*.cuh",
         "cub/agent/*.cuh",
@@ -30,6 +30,7 @@ cc_library(
         "cub/device/*.cuh",
         "cub/device/dispatch/*.cuh",
         "cub/grid/*.cuh",
+        "cub/host/*.cuh",
         "cub/warp/*.cuh",
         "cub/warp/specializations/*.cuh",
         "cub/iterator/*.cuh",
