@@ -11,16 +11,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 #    license_text = "LICENSE.TXT",
 #)
 
-filegroup(
-    name = "include-src",
-    srcs = glob([
-        "cub/**/*.h",
-    ]),
-)
-
 cc_library(
     name = "includes",
-    hdrs = [":include-src"],
     includes = [".", "cub"],
     textual_hdrs = glob([
         "cub/*.cuh",
