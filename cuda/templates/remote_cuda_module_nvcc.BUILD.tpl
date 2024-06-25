@@ -10,7 +10,7 @@ cc_library(
 
 filegroup(
     name = "includes",
-    srcs = glob(["**/*.hpp", "**/*.h", "**/*.hh"]),
+    srcs = glob(["**/*.hpp", "**/*.h"]),
     visibility = ["//visibility:public"],
 )
 
