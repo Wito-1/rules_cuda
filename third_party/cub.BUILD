@@ -14,7 +14,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 filegroup(
     name = "include-src",
     srcs = glob([
-        "cub/*.h",
+        "cub/**/*.h",
     ]),
 )
 
