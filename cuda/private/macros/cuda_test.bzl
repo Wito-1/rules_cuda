@@ -7,7 +7,7 @@ def cuda_test(name, **attrs):
         name: A unique name for this target (cc_test).
         **attrs: attrs of cc_test and cuda_library.
     """
-    cuda_library_only_attrs = ["deps", "srcs", "hdrs", "testonly", "alwayslink"]
+    cuda_library_only_attrs = ["deps", "srcs", "hdrs", "testonly", "alwayslink", "host_copts", "host_defines", "host_local_defines", "host_linkopts", "ptxasopts"]
     cuda_library_only_attrs_defaults = {
         "testonly": True,
         "alwayslink": True,
