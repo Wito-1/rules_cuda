@@ -36,6 +36,7 @@ filegroup(
         "@cuda_nvcc-{{platform}}//:bin/ptxas",
         "@cuda_nvcc-{{platform}}//:bin/fatbinary",
         "@cuda_nvcc-{{platform}}//:bin/cudafe++",
+        "@cuda_cudart-{{platform}}//:includes",
         "@cuda_nvcc-{{platform}}//:includes",
         "@cuda_nvcc-{{platform}}//:nvvm",
     ],

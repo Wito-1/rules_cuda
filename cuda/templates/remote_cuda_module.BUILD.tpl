@@ -9,3 +9,9 @@ cc_library(
 )
 
 exports_files(glob(["**/*"]))
+
+filegroup(
+    name = "includes",
+    srcs = glob(["**/*.hpp", "**/*.h"], allow_empty=True),
+    visibility = ["//visibility:public"],
+)
