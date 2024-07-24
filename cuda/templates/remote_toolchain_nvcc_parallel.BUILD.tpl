@@ -49,16 +49,21 @@ cuda_toolchain(
     toolchain_config = ":nvcc-config",
 )
 
+exec_constraints = ["@platforms//cpu:{{arch}}", "@platforms//os:{{os}}"]
+
 toolchain(
-    name = "nvcc-toolchain",
-    exec_compatible_with = [
-        "@platforms//os:{{os}}",
-        "@platforms//cpu:{{arch}}",
-    ],
-    target_compatible_with = [
-        "@platforms//os:{{os}}",
-        "@platforms//cpu:{{arch}}",
-    ],
+    name = "nvcc-toolchain-linux-x86_64",
+    exec_compatible_with = exec_constraints,
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"],
+    toolchain = ":nvcc",
+    toolchain_type = "@rules_cuda//cuda:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "nvcc-toolchain-linux-aarch64",
+    exec_compatible_with = exec_constraints,
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:aarch64"],
     toolchain = ":nvcc",
     toolchain_type = "@rules_cuda//cuda:toolchain_type",
     visibility = ["//visibility:public"],
