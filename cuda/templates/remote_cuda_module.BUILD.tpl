@@ -12,13 +12,13 @@ exports_files(glob(["**/*"]))
 
 filegroup(
     name = "{{MODULE_NAME}}_so",
-    srcs = glob(["lib/*.so*"]),
+    srcs = glob(["lib/*.so*"], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "{{MODULE_NAME}}_stubs_so",
-    srcs = glob(["lib/stubs/*.so*"]),
+    srcs = glob(["lib/stubs/*.so*"], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
