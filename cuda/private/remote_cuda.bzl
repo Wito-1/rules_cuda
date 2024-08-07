@@ -37,7 +37,13 @@ def _remote_cuda_impl(rctx):
                 if lib_name == "nvcc":
                     rctx.symlink(Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), "{}/BUILD.bazel".format(lib_name))
                 else:
-                    rctx.symlink(Label("//cuda:templates/remote_cuda_module.BUILD.tpl"), "{}/BUILD.bazel".format(lib_name))
+                    rctx.template(
+                        "{}/BUILD.bazel".format(lib_name),
+                        Label("//cuda:templates/remote_cuda_module.BUILD.tpl"),
+			substitutions = {
+                            "{{MODULE_NAME}}": lib_name,
+			},
+		    )
 
     # Output a toplevel BUILD.bazel file
     rctx.template(
@@ -93,7 +99,13 @@ def _remote_cuda_single_impl(rctx):
         if "nvcc" in rctx.attr.repo_name:
             rctx.symlink(Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), "BUILD.bazel")
         else:
-            rctx.symlink(Label("//cuda:templates/remote_cuda_module.BUILD.tpl"), "BUILD.bazel")
+            rctx.template(
+                "BUILD.bazel",
+                Label("//cuda:templates/remote_cuda_module.BUILD.tpl"),
+                substitutions = {
+                    "{{MODULE_NAME}}": rctx.attr.repo_name,
+                }
+            )
 
     rctx.file("MODULE.bazel", content = "module(name = '{}')".format(rctx.attr.repo_name), executable = False)
 
