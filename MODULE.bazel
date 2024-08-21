@@ -4,14 +4,46 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.4.2")
-bazel_dep(name = "platforms", version = "0.0.6")
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-cuda = use_extension("@rules_cuda//cuda:extensions.bzl", "toolchain")
-use_repo(cuda, "local_cuda")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.9")
+
+# Example of how one would instantiate platform specific toolchains
+toolchain_parallel = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_parallel", dev_dependency=True)
+toolchain_parallel.install(
+    name = "cuda-linux-x86_64",
+    platform = "linux-x86_64",
+    version = "11.8.0",
+)
+toolchain_parallel.install(
+    name = "cuda-linux-aarch64",
+    platform = "linux-aarch64",
+    version = "11.8.0",
+)
+toolchain_parallel.install(
+    name = "cuda-linux-sbsa",
+    platform = "linux-sbsa",
+    version = "11.8.0",
+)
+
+use_repo(toolchain_parallel, "cuda-linux-aarch64", "cuda-linux-sbsa", "cuda-linux-x86_64")
+
+# This toolchain contains a bunch of selects across the platforms
+toolchain_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_cross_platform", dev_dependency=True)
+toolchain_cross_platform.install(
+    name = "local_cuda",
+    cuda_repositories = {
+        "@cuda-linux-sbsa": "linux-sbsa",
+        "@cuda-linux-aarch64": "linux-aarch64",
+        "@cuda-linux-x86_64": "linux-x86_64",
+    },
+)
+use_repo(toolchain_cross_platform, "local_cuda")
 
 register_toolchains(
-    "@local_cuda//toolchain:nvcc-local-toolchain",
-    "@local_cuda//toolchain/clang:clang-local-toolchain",
-    "@local_cuda//toolchain/disabled:disabled-local-toolchain",
+    "@cuda-linux-x86_64//toolchain:nvcc-toolchain",
+    "@cuda-linux-aarch64//toolchain:nvcc-toolchain",
+    "@cuda-linux-sbsa//toolchain:nvcc-toolchain",
+    dev_dependency = True,
 )

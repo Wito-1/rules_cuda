@@ -41,6 +41,7 @@ cuda_library = _cuda_library
 cuda_binary = _cuda_binary
 cuda_test = _cuda_test
 
+# Functions to do different things depending on platform
 if_linux = _if_linux
 if_windows = _if_windows
 
