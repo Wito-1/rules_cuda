@@ -154,6 +154,7 @@ cc_library(
     name = "nvml",
     deps = [
         ":cuda_headers",
+        "@cuda_nvml_dev-{{platform}}//:hdrs",
     ] + [
         ":nvidia-ml_so",
     ],
