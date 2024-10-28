@@ -42,68 +42,6 @@ CPP_TOOLCHAIN_TYPE = "@bazel_tools//tools/cpp:toolchain_type"
 CUDA_TOOLCHAIN_TYPE = "//cuda:toolchain_type"
 
 
-def _remote_cuda_impl(rctx):
-    redist = rctx.read(Label(rctx.attr.json_path))
-    repos = json.decode(redist)
-    repos_to_define = dict()
-    base_url = rctx.attr.base_url
-
-    for key in repos:
-        if key == "release_date":
-            continue
-        for arch in repos[key]:
-            if arch == "name" or arch == "license" or arch == "version":
-                continue
-            repo_name = key + "-%s" % arch
-            repos_to_define[repo_name] = {
-                "repo_rule": "http_archive",
-                "name": repo_name,
-                "sha256": repos[key][arch]["sha256"],
-                "url": base_url + repos[key][arch]["relative_path"],
-            }
-
-            rctx.download_and_extract(
-                url = repos_to_define[repo_name]["url"],
-                sha256 = repos_to_define[repo_name]["sha256"],
-                stripPrefix = repos_to_define[repo_name]["strip_prefix"],
-                output = key,
-            )
-
-            rctx.symlink(Label("//cuda:templates/remote_cuda_module.BUILD.tpl"), "{}/BUILD.bazel".format(key))
-
-    # 
-    # Output a toplevel BUILD.bazel file
-    rctx.template(
-        path = "BUILD.bazel",
-        template = Label("//cuda:templates/remote_cuda.BUILD.tpl"),
-        substitutions = {
-            "{platform}": "linux-x86_64",  #TODO this should be a variable
-            "{repo_name}": rctx.attr.repo_name,
-        },
-    )
-
-    rctx.template(
-        path = "toolchain/BUILD.bazel",
-        template = Label("//cuda:templates/remote_toolchain_nvcc.BUILD.tpl"),
-        substitutions = {
-            "{platform}": "linux-x86_64",  #TODO this should be a variable
-            "{repo}": rctx.attr.repo_name,
-            "{major}": rctx.attr.repo_name,
-            "{minor}": rctx.attr.repo_name,
-            "{os}": rctx.attr.repo_name,
-            "{arch}": rctx.attr.repo_name,
-        },
-    )
-
-_remote_cuda = repository_rule(
-    implementation = _remote_cuda_impl,
-    attrs = {
-        "repo_name": attr.string(default = "remote_cuda"),
-        "base_url": attr.string(default = "https://developer.download.nvidia.com/compute/cuda/redist/"),
-        "json_path": attr.string(mandatory = True),
-    },
-)
-
 # buildifier: disable=unused-variable
 def use_cpp_toolchain(mandatory = True):
     """Helper to depend on the C++ toolchain.
@@ -139,20 +77,7 @@ def find_cuda_toolkit(ctx):
     """
     return ctx.toolchains[CUDA_TOOLCHAIN_TYPE].cuda_toolkit[CudaToolkitInfo]
 
-CUDA_VERSIONS_JSON = {
-    "11.4.4": "//cuda:redistrib/redistrib_11.4.4.json",
-    "11.5.2": "//cuda:redistrib/redistrib_11.5.2.json",
-    "11.6.2": "//cuda:redistrib/redistrib_11.6.2.json",
-    "11.7.1": "//cuda:redistrib/redistrib_11.7.1.json",
-    "11.8.0": "//cuda:redistrib/redistrib_11.8.0.json",
-    "12.0.0": "//cuda:redistrib/redistrib_12.0.0.json",
-    "12.0.1": "//cuda:redistrib/redistrib_12.0.1.json",
-    "12.1.0": "//cuda:redistrib/redistrib_12.1.0.json",
-}
-
-def register_cuda_toolchains(name = "remote_cuda_toolchain", version = "12.0.0", cuda_versions = CUDA_VERSIONS_JSON):
-    _remote_cuda(name = name, json_path = cuda_versions[version])
-
+def register_cuda_toolchains():
     native.register_toolchains(
         "@local_cuda//toolchain:nvcc-local-toolchain",
         "@local_cuda//toolchain/clang:clang-local-toolchain",
