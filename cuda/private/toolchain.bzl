@@ -160,12 +160,12 @@ def register_cuda_toolchains(name = "remote_cuda_toolchain", version = "12.0.0",
     )
 
 ## buildifier: disable=unnamed-macro
-#def register_detected_cuda_toolchains():
-#    """Helper to register the automatically detected CUDA toolchain(s).
-#
-#User can setup their own toolchain if needed and ignore the detected ones by not calling this macro.
-#"""
-#    native.register_toolchains(
-#        "@local_cuda//toolchain:nvcc-local-toolchain",
-#        "@local_cuda//toolchain/clang:clang-local-toolchain",
-#    )
+def register_detected_cuda_toolchains():
+    """Helper to register the automatically detected CUDA toolchain(s).
+
+User can setup their own toolchain if needed and ignore the detected ones by not calling this macro.
+"""
+    native.register_toolchains(
+        "@local_cuda//toolchain:nvcc-local-toolchain",
+        "@local_cuda//toolchain/clang:clang-local-toolchain",
+    )

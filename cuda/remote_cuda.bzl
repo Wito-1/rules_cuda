@@ -112,8 +112,8 @@ toolchain_parallel = module_extension(
 
 def _cuda_toolkit_cross_platform_impl(mctx):
     for mod in mctx.modules:
-#        if not mod.is_root:
-#            fail("Only the root module may override the path for the local cuda toolchain")
+        if not mod.is_root:
+            fail("Only the root module may override the path for the local cuda toolchain")
         for arg in mod.tags.install:
             remote_cuda_cross_platform(name = arg.name, cuda_platform_repositories = arg.cuda_repositories)
     return modules.use_all_repos(mctx)

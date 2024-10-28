@@ -10,40 +10,37 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.9")
 
 # Example of how one would instantiate platform specific toolchains
-toolchain_parallel = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_parallel", dev_dependency=True)
-toolchain_parallel.install(
-    name = "cuda-linux-x86_64",
-    platform = "linux-x86_64",
-    version = "11.8.0",
-)
-toolchain_parallel.install(
-    name = "cuda-linux-aarch64",
-    platform = "linux-aarch64",
-    version = "11.8.0",
-)
-toolchain_parallel.install(
-    name = "cuda-linux-sbsa",
-    platform = "linux-sbsa",
-    version = "11.8.0",
-)
-
-use_repo(toolchain_parallel, "cuda-linux-aarch64", "cuda-linux-sbsa", "cuda-linux-x86_64")
-
-# This toolchain contains a bunch of selects across the platforms
-toolchain_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda.bzl", "toolchain_cross_platform", dev_dependency=True)
-toolchain_cross_platform.install(
-    name = "local_cuda",
-    cuda_repositories = {
-        "@cuda-linux-sbsa": "linux-sbsa",
-        "@cuda-linux-aarch64": "linux-aarch64",
-        "@cuda-linux-x86_64": "linux-x86_64",
+cuda_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda_extension.bzl", "cuda_cross_platform", dev_dependency=True)
+cuda_cross_platform.install(
+    name = "cuda",
+    version = {
+        "linux-x86_64": "11.8.0",
+        "linux-aarch64": "11.8.0",
     },
 )
-use_repo(toolchain_cross_platform, "local_cuda")
 
-register_toolchains(
-    "@cuda-linux-x86_64//toolchain:nvcc-toolchain",
-    "@cuda-linux-aarch64//toolchain:nvcc-toolchain",
-    "@cuda-linux-sbsa//toolchain:nvcc-toolchain",
-    dev_dependency = True,
-)
+# @cuda contains cross-platform cuda library targets
+# @cuda_toolchain contains cross-platform nvcc toolchain definitions
+#use_repo(cuda_cross_platform, "cuda")
+use_repo(cuda_cross_platform, "cuda", "cuda_toolchain")
+
+# Register all cross-platform toolchains
+register_toolchains("@cuda_toolchain//:all", dev_dependency = True)
+
+# Download cudnn
+#cudnn_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda_extension.bzl", "cuda_cross_platform", dev_dependency=True)
+#cudnn_cross_platform.install(
+#    name = "cudnn",
+#    url = {
+#        "linux-x86_64": "https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_8.9.7.json",
+#        "linux-aarch64": "https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_8.9.7.json",
+#    },
+#    version = {
+#        "linux-x86_64": "8.9.7",
+#        "linux-aarch64": "8.9.7",
+#    },
+#)
+#
+## @cudnn contains aliases with "selects()" for cross-platform cudnn libraries
+## Use bazel query @cudnn//:all to see available libraries
+#use_repo(cudnn_cross_platform, "cudnn")

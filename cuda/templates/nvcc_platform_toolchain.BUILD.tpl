@@ -1,4 +1,4 @@
-# This becomes the BUILD file for @cuda//toolchain/ under Linux.
+# This becomes the BUILD file for @cuda-{{platform}}-toolchain// under Linux.
 
 load(
     "@rules_cuda//cuda:defs.bzl",

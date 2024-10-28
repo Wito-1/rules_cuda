@@ -4,6 +4,46 @@ remote_cuda - downloads a remote CUDA archive
 
 """
 
+
+# Create a repository rule that ties together all the cuda libraries for a platform
+
+def _cuda_platform_toolchain_impl(rctx):
+    cuda_platform_toolchain_template = Label(rctx.attr.cuda_platform_toolchain_template)
+    major_version, minor_version = _get_version(rctx.attr.version)
+    os, arch = _get_os_arch(rctx.attr.platform)
+    rctx.template(
+        "BUILD.bazel",
+        cuda_platform_toolchain_template,
+        substitutions = {
+            "{{platform}}": rctx.attr.platform,
+            "{{repo}}": rctx.attr.name,
+            "{{major}}": major_version,
+            "{{minor}}": minor_version,
+            "{{os}}": os,
+        },
+    )
+
+cuda_platform_toolchain = repository_rule(
+    implementation = _cuda_platform_toolchain_impl,
+    attrs = {
+        "version": attr.string(mandatory = True),
+        "platform": attr.string(mandatory = True),
+        "cuda_platform_toolchain_template" = attr.Label(default = Label("//cuda:templates/cuda_platform_toolchain_template.BUILD.tpl")),
+    },
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
 def _get_versions(version_string):
     major_version = version_string.split(".")[0]
     minor_version = version_string.split(".")[1]
@@ -121,37 +161,6 @@ remote_cuda = repository_rule(
     },
 )
 
-def _remote_cuda_single_impl(rctx):
-    rctx.download_and_extract(
-        url = rctx.attr.url,
-        sha256 = rctx.attr.sha256,
-        stripPrefix = rctx.attr.strip_prefix,
-    )
-
-    if rctx.attr.build_file == None:
-        if "nvcc" in rctx.attr.repo_name:
-            rctx.symlink(Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), "BUILD.bazel")
-        else:
-            rctx.template(
-                "BUILD.bazel",
-                Label("//cuda:templates/remote_cuda_module.BUILD.tpl"),
-                substitutions = {
-                    "{{MODULE_NAME}}": rctx.attr.repo_name,
-                }
-            )
-
-    rctx.file("MODULE.bazel", content = "module(name = '{}')".format(rctx.attr.repo_name), executable = False)
-
-remote_cuda_single = repository_rule(
-    implementation = _remote_cuda_single_impl,
-    attrs = {
-        "repo_name": attr.string(mandatory = True),
-        "url": attr.string(mandatory = True),
-        "sha256": attr.string(mandatory = True),
-        "strip_prefix": attr.string(default = ""),
-        "build_file": attr.label(),
-    },
-)
 
 def _remote_cuda_toplevel_impl(rctx):
     # Output a toplevel BUILD.bazel file
@@ -222,6 +231,14 @@ remote_cuda_cross_platform = repository_rule(
         "cuda_platform_repositories": attr.label_keyed_string_dict(
             doc = "List of platforms to create alias cuda rules for", 
             mandatory = True,
+        ),
+        "nvcc_toolchain_build_file": attr.label(
+            allow_single_file = True,
+            default = Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), 
+        ),
+        "cuda_library_build_file_template": attr.label(
+            allow_single_file = True,
+            default = Label("//cuda:templates/cuda_platform_library.BUILD.tpl"), 
         ),
     },
 )
