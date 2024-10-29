@@ -10,7 +10,7 @@ def _cuda_cross_platform_toolchain_alias_impl(rctx):
         aliases.append("""
 alias(
     name = "nvcc-toolchain-{PLATFORM}",
-    actual = "{PLATFORM_REPO}//toolchain:nvcc-toolchain-{PLATFORM}"
+    actual = "@@{PLATFORM_REPO}//:nvcc-toolchain-{PLATFORM}"
 )
 """.format(PLATFORM=platform, PLATFORM_REPO=label.repo_name))
 

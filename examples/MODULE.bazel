@@ -17,20 +17,22 @@ local_path_override(
 
 cuda_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda_extension.bzl", "cuda_cross_platform", dev_dependency=True)
 cuda_cross_platform.install(
-    name = "cuda",
+    name = "local_cuda",
     version = {
         "linux-x86_64": "11.8.0",
         "linux-aarch64": "11.8.0",
     },
+    toolchain = True,
 )
 
 # @cuda contains cross-platform cuda library targets
 # @cuda_toolchain contains cross-platform nvcc toolchain definitions
 #use_repo(cuda_cross_platform, "cuda")
-use_repo(cuda_cross_platform, "cuda", "cuda_toolchain")
+use_repo(cuda_cross_platform, "local_cuda", "local_cuda_toolchain", "local_cuda-linux-x86_64_toolchain")
 
 # Register all cross-platform toolchains
-register_toolchains("@cuda_toolchain//:all", dev_dependency = True)
+#register_toolchains("@local_cuda_toolchain//:all", dev_dependency = True)
+register_toolchains("@local_cuda-linux-x86_64_toolchain//:all", dev_dependency = True)
 
 #################################
 # Dependencies for nccl example #

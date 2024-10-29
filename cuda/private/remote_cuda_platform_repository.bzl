@@ -1,6 +1,3 @@
-module_contents = """
-bazel_dep("cuda_nvcc-linux-x86_64")
-"""
 def _cuda_platform_impl(rctx):
     # Output a toplevel BUILD.bazel file
     rctx.template(
@@ -9,10 +6,6 @@ def _cuda_platform_impl(rctx):
         substitutions = {
             "{{platform}}": rctx.attr.platform,
         },
-    )
-    rctx.file(
-        "MODULE.bazel",
-        content = module_contents,
     )
 
 cuda_platform = repository_rule(

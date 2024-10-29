@@ -10,7 +10,7 @@ def _cuda_platform_library_impl(rctx):
 
     if rctx.attr.build_file == None:
         if "nvcc" in rctx.attr.repo_name:
-            rctx.symlink(rctx.attr.nvcc_toolchain_build_file, "BUILD.bazel")
+            rctx.symlink(rctx.attr.nvcc_library_build_file, "BUILD.bazel")
         else:
             rctx.template(
                 "BUILD.bazel",
@@ -32,9 +32,9 @@ cuda_platform_library = repository_rule(
         "url": attr.string(mandatory = True),
         "strip_prefix": attr.string(default = ""),
         "build_file": attr.label(allow_single_file = True),
-        "nvcc_toolchain_build_file": attr.label(
+        "nvcc_library_build_file": attr.label(
             allow_single_file = True,
-            default = Label("//cuda:templates/remote_cuda_module_nvcc.BUILD.tpl"), 
+            default = Label("//cuda:templates/nvcc_cuda_platform_library.BUILD.tpl"),
         ),
         "cuda_library_build_file_template": attr.label(
             allow_single_file = True,
