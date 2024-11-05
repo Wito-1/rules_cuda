@@ -94,17 +94,9 @@ selects.config_setting_group(
     ],
 )
 
-constraint_value(
-    name = "sbsa",
-    constraint_setting = "@platforms//cpu",
-)
-
-selects.config_setting_group(
+alias(
     name = "linux-sbsa.constraint",
-    match_all = [
-        "@platforms//os:linux",
-        ":sbsa",
-    ],
+    actual = ":linux-aarch64.constraint",
 )
 
 constraint_setting(name = "rules_are_enabled_setting")

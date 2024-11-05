@@ -51,7 +51,7 @@ def _core_cross_platform_impl(mctx, arg):
         redistrib_url = platform_args_dict[platform].get("url", arg.default_download_template.format(platform_args_dict[platform]["version"]))
 
         # Downloads the redistributable file and organizes it into a dictionary
-        redistrib_file = "{}-{}.json".format(platform, arg.version)
+        redistrib_file = "{}-{}.json".format(platform, arg.version[platform])
         mctx.download(redistrib_url, output=redistrib_file, sha256=arg.sha256)
 
         _redistrib_args = {
@@ -98,7 +98,7 @@ def _core_cross_platform_impl(mctx, arg):
     cuda_cross_platform_alias(
         name = arg.name,
         cuda_platform_repositories = cuda_platform_repositories,
-        cuda_libraries = ["headers", "shared_libs", "shared_stub_libs", "static_libs"],
+        cuda_libraries = ["headers", "shared_libs", "shared_stub_libs", "static_libs", arg.name],
     )
 
 def _cudnn_cross_platform_impl(mctx):

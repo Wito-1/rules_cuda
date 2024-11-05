@@ -36,13 +36,11 @@ filegroup(
         "@@{{repo}}//:bin/ptxas",
         "@@{{repo}}//:bin/fatbinary",
         "@@{{repo}}//:bin/cudafe++",
-#        "@cuda_cudart-{{platform}}//:includes",
         "@@{{repo}}//:includes",
         "@@{{repo}}//:nvvm",
     ],
 )
 
-# TODO fix this external path
 cuda_toolchain(
     name = "nvcc-{{platform}}",
     compiler_executable = "external/{{repo}}/bin/nvcc",
@@ -50,12 +48,10 @@ cuda_toolchain(
     toolchain_config = ":nvcc-config-{{platform}}",
 )
 
-exec_constraints = ["@platforms//cpu:{{arch}}", "@platforms//os:{{os}}"]
-
 toolchain(
-    name = "nvcc-toolchain-{{os}}-{{arch}}",
-    exec_compatible_with = exec_constraints,
-    target_compatible_with = ["@platforms//os:{{os}}", "@platforms//cpu:{{arch}}"],
+    name = "nvcc-toolchain-{{platform}}",
+    exec_compatible_with = ["@platforms//cpu:{{exec_arch}}", "@platforms//os:{{exec_os}}"],
+    target_compatible_with = ["@platforms//cpu:{{target_arch}}", "@platforms//os:{{target_os}}"],
     toolchain = ":nvcc-{{platform}}",
     toolchain_type = "@rules_cuda//cuda:toolchain_type",
     visibility = ["//visibility:public"],

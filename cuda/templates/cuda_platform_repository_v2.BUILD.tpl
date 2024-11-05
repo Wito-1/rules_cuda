@@ -15,6 +15,7 @@ cc_library(
     name = "shared_libs",
     deps = [
         "@cudnn-{{platform}}//:shared_libs",
+        ":headers",
     ],
 )
 
@@ -22,6 +23,7 @@ cc_library(
     name = "shared_stub_libs",
     deps = [
         "@cudnn-{{platform}}//:shared_stub_libs",
+        ":headers",
     ],
 )
 
@@ -29,5 +31,15 @@ cc_library(
     name = "static_libs",
     deps = [
         "@cudnn-{{platform}}//:static_libs",
+        ":headers",
+    ],
+)
+
+cc_library(
+    name = "cudnn",
+    deps = [
+        ":shared_libs",
+        ":shared_stub_libs",
+        ":static_libs",
     ],
 )
