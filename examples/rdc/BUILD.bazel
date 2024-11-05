@@ -1,4 +1,4 @@
-load("@rules_cuda//cuda:defs.bzl", "cuda_library", "cuda_objects")
+load("@local_cuda//cuda:defs.bzl", "cuda_library", "cuda_objects")
 
 cuda_objects(
     name = "a_objects",
@@ -33,7 +33,9 @@ cuda_library(
     name = "a",
     srcs = ["a.cu"],
     rdc = True,
-    deps = [":b"],
+    deps = [
+        ":b",
+    ],
 )
 
 cuda_library(
