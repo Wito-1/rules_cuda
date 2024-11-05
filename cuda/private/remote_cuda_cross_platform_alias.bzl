@@ -17,6 +17,7 @@ TARGETS = [{{BZL_TARGETS}}]
 ) for tgt in TARGETS]
 """
 
+
 def _cuda_cross_platform_alias_impl(rctx):
     out_lines = []
     for line in ALIAS_TEMPLATE.split("\n"):
@@ -71,7 +72,7 @@ cuda_cross_platform_alias = repository_rule(
                 "cufft",
                 "cusolver",
                 "cusparse",
-                "nvtx",
+                "cuda_nvtx",
                 "runtime",
             ],
         ),

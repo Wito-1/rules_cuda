@@ -1,56 +1,49 @@
 """
-Creates a repository for a cuda platform toolchain definition
+Creates a repository for all cuda platforms' toolchain definitions
 """
-def _cuda_platform_toolchain_impl(rctx):
-    # Output the toolchain definitions
-    print(rctx.attr.nvcc_repository)
-    print(Label(rctx.attr.nvcc_repository).name)
-    print(Label(rctx.attr.nvcc_repository).repo_name)
+load("//cuda/private:utils.bzl", "get_os_arch", "get_versions", "get_platform_args_dict")
 
-    rctx.template(
-        "BUILD.bazel",
-        rctx.attr.cuda_nvcc_toolchain_build_file_template,
+def _cuda_platform_toolchains_impl(rctx):
+
+    template = rctx.read(rctx.attr.cuda_nvcc_toolchain_build_file_template)
+    arch_specific_defs = []
+    for platform in rctx.attr.nvcc_repository:
+        os, arch = get_os_arch(platform)
+        major, minor = get_versions(rctx.attr.version[platform])
+
+        arch_build_file_contents = template
+
         substitutions = {
-            "{{arch}}": rctx.attr.arch,
-            "{{platform}}": rctx.attr.platform,
-            "{{repo}}": Label(rctx.attr.nvcc_repository).repo_name,
-            "{{major}}": rctx.attr.major,
-            "{{minor}}": rctx.attr.minor,
-            "{{os}}": rctx.attr.os,
-        },
-    )
+            "{{arch}}": arch,
+            "{{platform}}": platform,
+            "{{repo}}": Label(rctx.attr.nvcc_repository[platform]).repo_name,
+            "{{major}}": major,
+            "{{minor}}": minor,
+            "{{os}}": os,
+        }
 
-cuda_platform_toolchain = repository_rule(
-    implementation = _cuda_platform_toolchain_impl,
+        for sub, value in substitutions.items():
+            arch_build_file_contents = arch_build_file_contents.replace(sub, value)
+
+        arch_specific_defs += [arch_build_file_contents]
+
+    rctx.file("BUILD.bazel", content = "\n".join(arch_specific_defs))
+
+
+cuda_platform_toolchains = repository_rule(
+    implementation = _cuda_platform_toolchains_impl,
     attrs = {
-        "arch": attr.string(
+        "version": attr.string_dict(
             mandatory = True,
-            doc = "Architecure for toolchain",
+            doc = "Version of the nvcc, where the keys are the platforms (eg. {\"linux-x86_64\": \"11.8.5\"})",
         ),
-        "platform": attr.string(
+        "nvcc_repository": attr.string_keyed_label_dict(
+            doc = "nvcc repository dictionary, where the keys are the platforms (eg. {\"linux-x86_64\": \"@cuda_nvcc-linux-x86_64-cuda\"}",
             mandatory = True,
-            doc = "Platform",
-        ),
-        "major": attr.string(
-            mandatory = True,
-            doc = "Major version",
-        ),
-        "minor": attr.string(
-            mandatory = True,
-            doc = "Minor version",
-        ),
-        "os": attr.string(
-            mandatory = True,
-            doc = "OS version",
-        ),
-        "nvcc_repository": attr.label(
-            doc = "nvcc repository",
-            mandatory = True,
-#            default = "@cuda_nvcc-linux-x86_64-remote_cuda",
         ),
         "cuda_nvcc_toolchain_build_file_template": attr.label(
             allow_single_file = True,
-            default = Label("//cuda:templates/remote_cuda_nvcc_toolchain.BUILD.tpl"),
+            default = Label("//cuda:templates/remote_cuda_nvcc_toolchain_v2.BUILD.tpl"),
         ),
     },
 )

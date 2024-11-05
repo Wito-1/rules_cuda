@@ -22,7 +22,6 @@ def _cuda_platform_library_impl(rctx):
     else:
         rctx.symlink(Label(rctx.attr.build_file), "BUILD.bazel")
 
-    rctx.file("MODULE.bazel", content = "module(name = '{}')".format(rctx.attr.repo_name), executable = False)
 
 cuda_platform_library = repository_rule(
     implementation = _cuda_platform_library_impl,

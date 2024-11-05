@@ -11,8 +11,18 @@ cc_library(
 )
 
 cc_library(
+    name = "cuda_stub",
+    srcs = ["@cuda_cudart-{{platform}}//:lib/stubs/libcuda.so"],
+    linkopts = [
+        "-ldl",
+        "-lpthread",
+        "-lrt",
+    ],
+)
+
+cc_library(
     name = "cudart_so",
-    srcs = ["@cuda_cudart-{{platform}}//:cuda_cudart_so",],
+    srcs = ["@cuda_cudart-{{platform}}//:cuda_cudart_so"],
     target_compatible_with = ["@platforms//os:linux"],
     alwayslink = 1,
 )
@@ -64,7 +74,7 @@ cc_library(
 cc_library(
     name = "cuda_so",
     srcs = [
-        "@cuda_cudart-{{platform}}//:cuda_cudart_stubs"
+        "@cuda_cudart-{{platform}}//:cuda_cudart_stubs_so"
     ],
     linkopts = [
         "-ldl",
@@ -231,16 +241,16 @@ cc_library(
 
 # nvtx
 cc_library(
-    name = "nvtx_so",
-    srcs = ["@cuda_nvtx-{{platform}}//:nvtx_so"],
+    name = "cuda_nvtx_so",
+    srcs = ["@cuda_nvtx-{{platform}}//:cuda_nvtx_so"],
     target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_library(
-    name = "nvtx",
+    name = "cuda_nvtx",
     deps = [
         ":cuda_headers",
-        ":nvtx_so",
+        ":cuda_nvtx_so",
     ],
 )
 

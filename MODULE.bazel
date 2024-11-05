@@ -8,6 +8,7 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.9")
+bazel_dep(name = "rules_cc", version = "0.0.9")
 
 # Example of how one would instantiate platform specific toolchains
 cuda_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda_extension.bzl", "cuda_cross_platform", dev_dependency=True)
@@ -30,7 +31,8 @@ register_toolchains("@remote_cuda_toolchain//:all", dev_dependency = True)
 
 # Download cudnn
 #cuda_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda_extension.bzl", "cudnn_cross_platform", dev_dependency=True)
-cuda_cross_platform.install_cudnn(
+cudnn_cross_platform = use_extension("@rules_cuda//cuda:remote_cudnn_extension.bzl", "cudnn_cross_platform", dev_dependency=True)
+cudnn_cross_platform.install(
     name = "remote_cudnn",
     version = {
         "linux-x86_64": "8.9.5",
@@ -44,4 +46,4 @@ cuda_cross_platform.install_cudnn(
 
 ## @cudnn contains aliases with "selects()" for cross-platform cudnn libraries
 ## Use bazel query @cudnn//:all to see available libraries
-use_repo(cuda_cross_platform, "remote_cudnn")
+use_repo(cudnn_cross_platform, "remote_cudnn")
