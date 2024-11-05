@@ -74,7 +74,7 @@ cc_library(
 cc_library(
     name = "cuda_so",
     srcs = [
-        "@cuda_cudart-{{platform}}//:cuda_cudart_stubs_so"
+        "@cuda_cudart-{{platform}}//:lib/stubs/libcuda.so"
     ],
     linkopts = [
         "-ldl",
@@ -119,6 +119,7 @@ cc_library(
     deps = [
         ":cuda_headers",
         ":cupti_so",
+        "@cuda_cupti-{{platform}}//:hdrs",
     ],
 )
 
@@ -181,6 +182,7 @@ cc_library(
     name = "curand",
     deps = [
         ":cuda_headers",
+        "@libcurand-{{platform}}//:hdrs",
     ] + [
         ":curand_so",
     ],
@@ -205,6 +207,7 @@ cc_library(
     deps = [
         ":cuda_headers",
         ":cufft_so",
+        "@libcufft-{{platform}}//:hdrs",
     ],
 )
 
@@ -221,6 +224,7 @@ cc_library(
     deps = [
         ":cuda_headers",
         ":cusolver_so",
+        "@libcusolver-{{platform}}//:hdrs",
     ],
 )
 
@@ -236,6 +240,7 @@ cc_library(
     deps = [
         ":cuda_headers",
         ":cusparse_so",
+        "@libcusparse-{{platform}}//:hdrs",
     ],
 )
 
@@ -251,6 +256,23 @@ cc_library(
     deps = [
         ":cuda_headers",
         ":cuda_nvtx_so",
+        "@cuda_nvtx-{{platform}}//:hdrs",
+    ],
+)
+
+# nvrtc
+cc_library(
+    name = "nvrtc_so",
+    srcs = ["@cuda_nvrtc-{{platform}}//:cuda_nvrtc_so"],
+    target_compatible_with = ["@platforms//os:linux"],
+)
+cc_library(
+    name = "nvrtc",
+    deps = [
+        ":cuda_headers",
+    ] + [
+        "@cuda_nvrtc-{{platform}}//:hdrs",
+        ":nvrtc_so",
     ],
 )
 

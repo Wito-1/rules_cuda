@@ -67,6 +67,8 @@ cuda_cross_platform_alias = repository_rule(
                 "cupti",
                 "nvperf_host",
                 "nvml",
+                "nvrtc",
+                "nvtx",
                 "nvperf_target",
                 "curand",
                 "cufft",
