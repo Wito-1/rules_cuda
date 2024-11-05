@@ -18,19 +18,16 @@ cuda_cross_platform.install(
         "linux-x86_64": "11.8.0",
         "linux-aarch64": "11.8.0",
     },
-    toolchain = True,
 )
 
-# @cuda contains cross-platform cuda library targets
-# @cuda_toolchain contains cross-platform nvcc toolchain definitions
-#use_repo(cuda_cross_platform, "cuda")
+# @remote_cuda contains cross-platform cuda library targets
+# @remote_cuda_toolchain contains cross-platform nvcc toolchain definitions
 use_repo(cuda_cross_platform, "remote_cuda", "remote_cuda_toolchain")
 
 # Register all cross-platform toolchains
 register_toolchains("@remote_cuda_toolchain//:all", dev_dependency = True)
 
 # Download cudnn
-#cuda_cross_platform = use_extension("@rules_cuda//cuda:remote_cuda_extension.bzl", "cudnn_cross_platform", dev_dependency=True)
 cudnn_cross_platform = use_extension("@rules_cuda//cuda:remote_cudnn_extension.bzl", "cudnn_cross_platform", dev_dependency=True)
 cudnn_cross_platform.install(
     name = "remote_cudnn",
@@ -44,6 +41,6 @@ cudnn_cross_platform.install(
     }
 )
 
-## @cudnn contains aliases with "selects()" for cross-platform cudnn libraries
+## @remote_cudnn contains aliases with "selects()" for cross-platform cudnn libraries
 ## Use bazel query @cudnn//:all to see available libraries
 use_repo(cudnn_cross_platform, "remote_cudnn")
