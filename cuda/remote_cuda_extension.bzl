@@ -64,10 +64,8 @@ def _cross_platform_impl_wrapper(mctx, arg):
 
         # TODO: ideally we'd be able to to make download_info_dict into a dictionary that can be used with cuda_platform_library with **args
         for lib_name, download_info_dict in cuda_redistrib_dict.items():
-            # Create a repository with the name: <name providided by user>-<platform>-<cuda library name from redistrib>
-            # eg. cuda-linux-x86_64-cublas
-
-            # TODO fix this naming for uniqueness
+            # Create a repository with the name: <cuda library name from redistrib>-<platform>-<name providided by user>
+            # eg. cublas-linux-x86_64-cuda
             name = "{}-{}-{}".format(lib_name, platform, arg.name)
 
             cuda_platform_library(
@@ -76,6 +74,7 @@ def _cross_platform_impl_wrapper(mctx, arg):
                 sha256 = download_info_dict["sha256"],
                 url = download_info_dict["url"],
                 strip_prefix = download_info_dict["strip_prefix"],
+                cuda_library_build_file_template = Label("//cuda:templates/cuda_platform_library_v2.BUILD.tpl"),
             )
             cuda_platform_libraries[platform].append(lib_name)
 
@@ -85,6 +84,7 @@ def _cross_platform_impl_wrapper(mctx, arg):
         cuda_platform(
             name = name,
             platform = "{}-{}".format(platform, arg.name),
+            cuda_platform_build_file_template = Label("//cuda:templates/cuda_platform_repository_v3.BUILD.tpl"),
         )
 
         # TODO: we should be able to put the label to the target(s) exactly.

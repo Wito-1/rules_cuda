@@ -3,7 +3,7 @@ package(
 )
 
 cc_library(
-    name = "hdrs",
+    name = "headers",
     hdrs = [":includes"],
     includes = ["include"],
 )

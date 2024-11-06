@@ -7,7 +7,7 @@ package(
 exports_files(glob(["**/*"]))
 
 cc_library(
-    name = "hdrs",
+    name = "headers",
     hdrs = glob(["**/*.hpp", "**/*.h"], allow_empty=True),
     includes = ["include"],
 )
@@ -15,17 +15,29 @@ cc_library(
 cc_library(
     name = "static_libs",
     srcs = glob(["lib/*.a"], allow_empty=True),
-    deps = [":hdrs"],
+    deps = [":headers"],
 )
 
 cc_library(
     name = "shared_libs",
-    srcs = glob(["lib/*.so*"], allow_empty=True),
-    deps = [":hdrs"],
+    srcs = glob(["lib/*.so*"], exclude = ["lib/*host.so", "lib/*target.so"], allow_empty=True),
+    deps = [":headers"],
 )
 
 cc_library(
     name = "shared_stub_libs",
     srcs = glob(["lib/stubs/*.so*"], allow_empty=True),
-    deps = [":hdrs"],
+    deps = [":headers"],
+)
+
+cc_library(
+    name = "host_shared_libs",
+    srcs = glob(["lib/*host.so*"], allow_empty=True),
+    deps = [":headers"],
+)
+
+cc_library(
+    name = "target_shared_libs",
+    srcs = glob(["lib/*target.so*"], allow_empty=True),
+    deps = [":headers"],
 )

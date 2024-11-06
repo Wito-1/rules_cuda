@@ -7,7 +7,7 @@ package(
 cc_library(
     name = "headers",
     deps = [
-        "@cudnn-{{platform}}//:hdrs",
+        "@cudnn-{{platform}}//:headers",
     ],
 )
 
