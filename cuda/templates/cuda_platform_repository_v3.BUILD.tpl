@@ -12,6 +12,8 @@ cc_library(
     deps = [
         "@cuda_cudart-{{platform}}//:headers",
         "@cuda_nvcc-{{platform}}//:headers",
+        "@cuda_cccl-{{platform}}//:cuda_headers",
+        "@cuda_cccl-{{platform}}//:nv_headers",
     ],
 )
 
@@ -201,6 +203,28 @@ cc_library(
     deps = [
         ":headers",
         "@cuda_nvrtc-{{platform}}//:shared_libs",
+    ],
+)
+
+###############
+# nvjitlink
+###############
+cc_library(
+    name = "nvjitlink",
+    deps = [
+        ":headers",
+        "@libnvjitlink-{{platform}}//:shared_libs",
+    ],
+)
+
+###############
+# cccl
+###############
+cc_library(
+    name = "cccl",
+    deps = [
+        ":headers",
+        "@cuda_cccl-{{platform}}//:headers",
     ],
 )
 
