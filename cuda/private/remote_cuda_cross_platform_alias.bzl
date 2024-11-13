@@ -42,7 +42,6 @@ def _cuda_cross_platform_alias_impl(rctx):
 cuda_cross_platform_alias = repository_rule(
     implementation = _cuda_cross_platform_alias_impl,
     attrs = {
-        #"cuda_platform_repositories": attr.string_dict(
         "cuda_platform_repositories": attr.label_keyed_string_dict(
             doc = "List of platforms to create alias cuda rules for", 
             mandatory = True,
@@ -56,30 +55,8 @@ cuda_cross_platform_alias = repository_rule(
             default = Label("//cuda:templates/defs.bzl.tpl"),
         ),
         "cuda_libraries": attr.string_list(
-            default = [
-                "headers",
-                "cudart_shared_libs",
-                "cudart_static_libs",
-                "cudart_shared_stub_libs",
-                "cuda_runtime",
-                "cuda_runtime_static",
-                "no_cuda_runtime",
-                "cccl",
-                "cuda",
-                "cublas",
-                "cupti",
-                "nvperf_host",
-                "nvperf_target",
-                "nvml",
-                "curand",
-                "cufft",
-                "cusolver",
-                "cusparse",
-                "nvtx",
-                "nvrtc",
-                "runtime",
-                "nvjitlink",
-            ],
+            doc = "A list of libraries to create aliases for",
+            mandatory = True,
         ),
     },
 )

@@ -32,6 +32,24 @@ extension_attr = {
     )
 }
 
+def _verify_major_versions(platform_args_dict):
+    """Fail if the major cuda version for all platforms do not matc"""
+    platforms = platform_args_dict.keys()
+    versions = {platform: platform_args_dict[platform]["version"] for platform in platforms}
+    first_value = versions[platforms[0]].split(".")[0]
+
+    if not all([versions[platform].split(".")[0] == first_value for platform in platforms]):
+        fail("All cuda libraries in an extension need the same major version, received {}".format(versions))
+
+def _get_target_names(mctx, build_file):
+    targets = []
+    contents = mctx.read(build_file)
+    for line in contents.split("\n"):
+        if "name" in line:
+            name = line.split("=")[1].strip(" ").strip(")").strip(",").strip('"')
+            targets.append(name)
+    return targets
+
 def _cross_platform_impl_wrapper(mctx, arg):
     # Each cuda library + platform is its own repository
     cuda_platform_libraries = {}
@@ -42,6 +60,8 @@ def _cross_platform_impl_wrapper(mctx, arg):
 
     # Rearrange the provided arguments into a dictionary keyed by platform. Eg. dict["linux-x86_64"]["url"] = "https//..."
     platform_args_dict = get_platform_args_dict(arg)
+
+    _verify_major_versions(platform_args_dict)
 
     for platform, args in platform_args_dict.items():
         cuda_platform_libraries[platform] = []
@@ -81,21 +101,24 @@ def _cross_platform_impl_wrapper(mctx, arg):
         # Create a "platform" repository that brings together the "platform-library" repositories
         # eg. cuda-linux-x86_64 (contains cuda-linux-x86_64)
         name = "{}-{}".format(arg.name, platform)
-        major_version = platform_args_dict[platform["version"].split(".")[0]
+        major_version = platform_args_dict[platform]["version"].split(".")[0]
+        platform_build_file = Label("//cuda:templates/cuda{}_platform_repository.BUILD.tpl".format(major_version))
         cuda_platform(
             name = name,
             platform = "{}-{}".format(platform, arg.name),
-            cuda_platform_build_file_template = Label("//cuda:templates/cuda{}_platform_repository.BUILD.tpl".format(major_version)),
+            cuda_platform_build_file_template = platform_build_file,
         )
 
         # TODO: we should be able to put the label to the target(s) exactly.
         cuda_platform_repositories.update({"@{}".format(name): platform})
 
+    cuda_libraries = _get_target_names(mctx, build_file = platform_build_file)
     # Create an overarching library with the name provided by the user
     # that are aliases containing "select()" statements to the "platform" repositories
     cuda_cross_platform_alias(
         name = arg.name,
         cuda_platform_repositories = cuda_platform_repositories,
+        cuda_libraries = cuda_libraries,
     )
 
     # Create a toolchain per target platform & target hosts
