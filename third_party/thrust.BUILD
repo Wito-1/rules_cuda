@@ -18,7 +18,7 @@ filegroup(
         "thrust/*.h",
         "thrust/**/*.h",
         "thrust/**/*.inl",
-    ]),
+    ], allow_empty = True),
 )
 
 cc_library(

@@ -28,7 +28,7 @@ cc_library(
         "cub/iterator/*.cuh",
         "cub/thread/*.cuh",
         "cub/detail/*.cuh",
-    ]),
+    ], allow_empty = True),
 )
 
 cc_library(
