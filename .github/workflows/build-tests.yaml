@@ -56,6 +56,32 @@ jobs:
           echo "build --config=clang" > $HOME/.bazelrc
           echo "build:clang --@rules_cuda//cuda:archs=sm_80" >> $HOME/.bazelrc
 
+      - name: Install CUDA (Windows)
+        uses: Jimver/cuda-toolkit@v0.2.10
+        if: ${{ startsWith(matrix.cases.os, 'windows') }}
+        with:
+          cuda: ${{ matrix.cases.cuda-version }}
+          sub-packages: '["nvcc", "cudart"]'
+          method: network
+      - name: Show bin, include, lib64 (Windows)
+        if: ${{ startsWith(matrix.cases.os, 'windows') }}
+        run: |
+          tree /F $env:CUDA_PATH/bin
+          tree /F $env:CUDA_PATH/include
+          tree /F $env:CUDA_PATH/lib/x64
+      - name: Set Visual Studio Environment (Windows)
+        if: ${{ startsWith(matrix.cases.os, 'windows') }}
+        run: .github/workflows/Set-VSEnv.ps1 2019
+
+      - run: bazelisk build @rules_cuda_examples//basic:all
+      - run: bazelisk build @rules_cuda_examples//rdc:all
+      - run: bazelisk build @rules_cuda_examples//if_cuda:main
+      - run: bazelisk build @rules_cuda_examples//if_cuda:main --enable_cuda=False
+      - run: cd examples && bazelisk build //basic:all --config=bzlmod
+      - run: cd examples && bazelisk build //rdc:all --config=bzlmod
+      - run: cd examples && bazelisk build //if_cuda:main --config=bzlmod
+      - run: cd examples && bazelisk build //if_cuda:main --enable_cuda=False --config=bzlmod
+        
       # Check https://bazel.build/release#support-matrix, manually unroll the the strategy matrix to avoid exploding
       # the combinations.
 

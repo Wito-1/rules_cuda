@@ -38,9 +38,9 @@ cuda_toolchain = rule(
         "_cc_toolchain": attr.label(default = "@bazel_tools//tools/cpp:current_cc_toolchain"),
     },
 )
-
 CPP_TOOLCHAIN_TYPE = "@bazel_tools//tools/cpp:toolchain_type"
 CUDA_TOOLCHAIN_TYPE = "//cuda:toolchain_type"
+
 
 # buildifier: disable=unused-variable
 def use_cpp_toolchain(mandatory = True):
@@ -77,7 +77,14 @@ def find_cuda_toolkit(ctx):
     """
     return ctx.toolchains[CUDA_TOOLCHAIN_TYPE].cuda_toolkit[CudaToolkitInfo]
 
-# buildifier: disable=unnamed-macro
+def register_cuda_toolchains():
+    native.register_toolchains(
+        "@local_cuda//toolchain:nvcc-local-toolchain",
+        "@local_cuda//toolchain/clang:clang-local-toolchain",
+        "@local_cuda//toolchain/disabled:disabled-local-toolchain",
+    )
+
+## buildifier: disable=unnamed-macro
 def register_detected_cuda_toolchains():
     """Helper to register the automatically detected CUDA toolchain(s).
 
@@ -86,5 +93,4 @@ User can setup their own toolchain if needed and ignore the detected ones by not
     native.register_toolchains(
         "@local_cuda//toolchain:nvcc-local-toolchain",
         "@local_cuda//toolchain/clang:clang-local-toolchain",
-        "@local_cuda//toolchain/disabled:disabled-local-toolchain",
     )

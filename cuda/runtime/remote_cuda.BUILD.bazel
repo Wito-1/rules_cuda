@@ -1,0 +1,270 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cudart_headers",
+    hdrs = glob(["cuda_cudart/include/**"]),
+    includes = ["cuda_cudart/include"],
+)
+
+cc_library(
+    name = "nvcc_headers",
+    hdrs = glob(["cuda_nvcc/include/**"]),
+    includes = ["cuda_cudart/include"],
+)
+
+cc_library(
+    name = "cuda_headers",
+    deps = [
+        ":cudart_headers",
+        ":nvcc_headers",
+    ],
+)
+
+cc_library(
+    name = "cuda_stub",
+    srcs = ["cuda_cudart/lib/stubs/libcuda.so"],
+    linkopts = [
+        "-ldl",
+        "-lpthread",
+        "-lrt",
+    ],
+)
+
+cc_library(
+    name = "cudart_so",
+    srcs = ["cuda_cudart/lib/libcudart.so"],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "cudadevrt_a",
+    srcs = ["cuda_cudart/lib/libcudadevrt.a"],
+    alwayslink = 1,
+)
+
+# Note: do not use this target directly, use the configurable label_flag
+# @rules_cuda//cuda:runtime instead.
+cc_library(
+    name = "cuda_runtime",
+    linkopts = [
+        "-ldl",
+        "-lpthread",
+        "-lrt",
+    ],
+    alwayslink = 1,
+    deps = [":cuda_headers"] + [
+        # devrt is require for jit linking when rdc is enabled
+        ":cudadevrt_a",
+        ":cudart_so",
+    ],
+)
+
+# Note: do not use this target directly, use the configurable label_flag
+# @rules_cuda//cuda:runtime instead.
+cc_library(
+    name = "cuda_runtime_static",
+    srcs = ["cuda_cudart/cuda/lib64/libcudart_static.a"],
+    linkopts = [
+        "-ldl",
+        "-lpthread",
+        "-lrt",
+    ],
+    deps = [":cuda_headers", ":cudadevrt_a"],
+)
+
+cc_library(
+    name = "no_cuda_runtime",
+)
+
+cc_import(
+    name = "cuda_so",
+    shared_library = "cuda_cudart/lib/stubs/libcuda.so",
+)
+
+cc_library(
+    name = "cuda",
+    deps = [
+        ":cuda_headers",
+        ":cuda_so",
+    ],
+)
+
+cc_import(
+    name = "cublas_so",
+    shared_library = "libcublas/lib/libcublas.so",
+)
+
+cc_import(
+    name = "cublasLt_so",
+    shared_library = "libcublas/lib/libcublasLt.so",
+)
+
+cc_library(
+    name = "cublas_headers",
+    hdrs = glob(["libcublas/include/**"]), 
+    includes = glob(["libcublas/include"]), 
+)
+
+cc_library(
+    name = "cublas",
+    deps = [
+        ":cuda_runtime",
+        ":cublas_headers",
+        ":cublasLt_so",
+        ":cublas_so",
+    ],
+)
+
+# CUPTI
+cc_import(
+    name = "cupti_so",
+    shared_library = "cuda/lib64/libcupti.so",
+)
+
+cc_library(
+    name = "cupti_headers",
+    hdrs = glob(["cuda_cupti/cuda/extras/CUPTI/include/*.h"]),
+    includes = ["cuda_cupti/cuda/extras/CUPTI/include"],
+)
+
+cc_library(
+    name = "cupti",
+    deps = [
+        ":cuda_headers",
+        ":cupti_so",
+    ],
+)
+
+# nvperf
+cc_import(
+    name = "nvperf_host_so",
+    shared_library = "cuda_cupti/cuda/lib64/libnvperf_host.so",
+)
+
+cc_library(
+    name = "nvperf_host",
+    deps = [
+        ":cuda_headers",
+        ":nvperf_host_so",
+    ],
+)
+
+cc_import(
+    name = "nvperf_target_so",
+    shared_library = "cuda_cupti/cuda/lib64/libnvperf_target.so",
+)
+
+cc_library(
+    name = "nvperf_target",
+    deps = [
+        ":cuda_headers",
+        ":nvperf_target_so",
+    ],
+)
+
+# NVML
+cc_import(
+    name = "nvidia-ml_so",
+    shared_library = "cuda_nvml_dev/cuda/lib64/stubs/libnvidia-ml.so",
+)
+
+cc_library(
+    name = "nvml",
+    deps = [
+        ":cuda_headers",
+        ":nvidia-ml_so",
+    ],
+)
+
+# curand
+cc_import(
+    name = "curand_so",
+    shared_library = "libcurand/cuda/lib64/libcurand.so",
+)
+
+cc_library(
+    name = "curand",
+    deps = [
+        ":cuda_headers",
+        ":curand_so",
+    ],
+)
+
+# nvptxcompiler
+cc_import(
+    name = "nvptxcompiler_so",
+    static_library = "cuda_nvcc/lib/libnvptxcompiler_static.a",
+)
+
+cc_library(
+    name = "nvptxcompiler",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":nvcc_headers",
+        ":nvptxcompiler_so"
+    ]
+)
+
+# cufft
+cc_import(
+    name = "cufft_so",
+    shared_library = "libcufft/cuda/lib64/libcufft.so",
+)
+
+cc_import(
+    name = "cufftw_so",
+    shared_library = "libcufft/cuda/lib64/libcufftw.so",
+)
+
+cc_library(
+    name = "cufft",
+    deps = [
+        ":cuda_headers",
+        ":cufft_so",
+        ":cufftw_so"
+    ],
+)
+
+# cusolver
+cc_import(
+    name = "cusolver_so",
+    shared_library = "libcusolver/lib/libcusolver.so",
+)
+
+cc_library(
+    name = "cusolver",
+    deps = [
+        ":cuda_headers",
+        ":cusolver_so",
+    ],
+)
+
+# cusparse
+cc_import(
+    name = "cusparse_so",
+    shared_library = "libscusparse/cuda/lib64/libcusparse.so",
+)
+
+cc_library(
+    name = "cusparse",
+    deps = [
+        ":cuda_headers",
+        ":cusparse_so",
+    ],
+)
+
+# nvtx
+cc_import(
+    name = "nvtx_so",
+    shared_library = "cuda_nvtx/cuda/lib64/libnvToolsExt.so",
+)
+
+cc_library(
+    name = "nvtx",
+    deps = [
+        ":cuda_headers",
+        ":nvtx_so",
+    ],
+)
