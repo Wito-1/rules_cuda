@@ -81,10 +81,11 @@ def _cross_platform_impl_wrapper(mctx, arg):
         # Create a "platform" repository that brings together the "platform-library" repositories
         # eg. cuda-linux-x86_64 (contains cuda-linux-x86_64)
         name = "{}-{}".format(arg.name, platform)
+        major_version = platform_args_dict[platform["version"].split(".")[0]
         cuda_platform(
             name = name,
             platform = "{}-{}".format(platform, arg.name),
-            cuda_platform_build_file_template = Label("//cuda:templates/cuda_platform_repository_v3.BUILD.tpl"),
+            cuda_platform_build_file_template = Label("//cuda:templates/cuda{}_platform_repository.BUILD.tpl".format(major_version)),
         )
 
         # TODO: we should be able to put the label to the target(s) exactly.
